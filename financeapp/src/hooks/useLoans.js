@@ -22,11 +22,17 @@ export function useLoans() {
     await fetch()
   }
 
+  async function updateLoan(id, data) {
+    const { error } = await supabase.from('loans').update(data).eq('id', id)
+    if (error) throw new Error(error.message)
+    await fetch()
+  }
+
   async function deleteLoan(id) {
     const { error } = await supabase.from('loans').delete().eq('id', id)
     if (error) throw new Error(error.message)
     await fetch()
   }
 
-  return { loans, loading, error, addLoan, deleteLoan, refetch: fetch }
+  return { loans, loading, error, addLoan, updateLoan, deleteLoan, refetch: fetch }
 }

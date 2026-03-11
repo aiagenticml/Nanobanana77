@@ -18,6 +18,10 @@ const PAGE_TITLES = {
   settings: 'Settings',
 }
 
+function TabPanel({ active, children }) {
+  return <div style={{ display: active ? 'block' : 'none' }}>{children}</div>
+}
+
 export default function App() {
   const [tab, setTab] = useState('dashboard')
   const [defaultCurrency, setDefaultCurrency] = useState('SGD')
@@ -28,20 +32,16 @@ export default function App() {
     })
   }, [])
 
-  const pages = {
-    dashboard: <Dashboard />,
-    expenses: <Expenses />,
-    loans: <Loans />,
-    subscriptions: <Subscriptions />,
-    settings: <Settings />,
-  }
-
   return (
     <SettingsContext.Provider value={{ defaultCurrency, setDefaultCurrency }}>
       <div className="min-h-screen bg-gray-50 flex flex-col max-w-lg mx-auto">
         <TopBar title={PAGE_TITLES[tab]} />
         <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
-          {pages[tab]}
+          <TabPanel active={tab === 'dashboard'}><Dashboard /></TabPanel>
+          <TabPanel active={tab === 'expenses'}><Expenses /></TabPanel>
+          <TabPanel active={tab === 'loans'}><Loans /></TabPanel>
+          <TabPanel active={tab === 'subscriptions'}><Subscriptions /></TabPanel>
+          <TabPanel active={tab === 'settings'}><Settings /></TabPanel>
         </main>
         <BottomNav active={tab} onChange={setTab} />
       </div>

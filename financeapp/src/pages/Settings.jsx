@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 
 export default function Settings() {
   const { defaultCurrency, setDefaultCurrency } = useContext(SettingsContext)
+  const [localCurrency, setLocalCurrency] = useState(defaultCurrency)
   const [userName, setUserName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -15,13 +16,20 @@ export default function Settings() {
     })
   }, [])
 
+  useEffect(() => {
+    setLocalCurrency(defaultCurrency)
+  }, [defaultCurrency])
+
   async function handleSave(e) {
     e.preventDefault()
     setSaving(true)
-    await supabase.from('settings').update({ default_currency: defaultCurrency, user_name: userName }).eq('id', 1)
+    const { error } = await supabase.from('settings').update({ default_currency: localCurrency, user_name: userName }).eq('id', 1)
+    if (!error) {
+      setDefaultCurrency(localCurrency)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    }
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
   }
 
   return (
@@ -37,7 +45,7 @@ export default function Settings() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Default Currency</label>
-            <select value={defaultCurrency} onChange={e => setDefaultCurrency(e.target.value)}
+            <select value={localCurrency} onChange={e => setLocalCurrency(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
               {Object.entries(CURRENCIES).map(([code, sym]) => (
                 <option key={code} value={code}>{code} ({sym})</option>

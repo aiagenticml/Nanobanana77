@@ -34,8 +34,12 @@ export default function QuickAddBar({ onAdd }) {
       setError('Format: amount [category] [notes] — e.g. "12.50 food hawker lunch"')
       return
     }
-    await onAdd(data)
-    setInput('')
+    try {
+      await onAdd(data)
+      setInput('')
+    } catch (err) {
+      setError(err.message || 'Failed to add expense')
+    }
   }
 
   return (

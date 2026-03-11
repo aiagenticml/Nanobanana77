@@ -33,6 +33,12 @@ export function useSubscriptions() {
     await fetch()
   }
 
+  async function updateSubscription(id, data) {
+    const { error } = await supabase.from('subscriptions').update(data).eq('id', id)
+    if (error) throw new Error(error.message)
+    await fetch()
+  }
+
   async function deleteSubscription(id) {
     const { error } = await supabase.from('subscriptions').delete().eq('id', id)
     if (error) throw new Error(error.message)
@@ -53,5 +59,5 @@ export function useSubscriptions() {
     await fetch()
   }
 
-  return { subscriptions, loading, error, addSubscription, deleteSubscription, markPaid, refetch: fetch }
+  return { subscriptions, loading, error, addSubscription, updateSubscription, deleteSubscription, markPaid, refetch: fetch }
 }

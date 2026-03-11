@@ -7,6 +7,7 @@ import EmptyState from '../components/shared/EmptyState'
 
 export default function Loans() {
   const [showForm, setShowForm] = useState(false)
+  const [deleting, setDeleting] = useState(null)
   const { loans, loading, addLoan, deleteLoan } = useLoans()
 
   async function handleAdd(data) {
@@ -28,7 +29,7 @@ export default function Loans() {
       ) : (
         <div className="space-y-3">
           {loans.map(loan => (
-            <LoanCard key={loan.id} loan={loan} onDelete={deleteLoan} />
+            <LoanCard key={loan.id} loan={loan} onDelete={id => setDeleting(id)} />
           ))}
         </div>
       )}
@@ -37,6 +38,18 @@ export default function Loans() {
         <Modal title="Add Loan" onClose={() => setShowForm(false)}>
           <LoanForm onSubmit={handleAdd} onCancel={() => setShowForm(false)} />
         </Modal>
+      )}
+
+      {deleting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
+            <p className="text-gray-800 font-medium mb-4">Delete this loan?</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleting(null)} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>
+              <button onClick={() => { deleteLoan(deleting); setDeleting(null) }} className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Delete</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
