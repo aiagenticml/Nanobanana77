@@ -63,7 +63,31 @@ Hosted on Vercel. Auto-deploys on push to `main`. Root directory must be set to 
 
 ## tictactoe
 
-Vanilla HTML/CSS/JS — no build step. Open `tictactoe/index.html` directly in a browser.
+Vanilla HTML/CSS/JS — no build step, no dependencies. Open `tictactoe/index.html` directly in a browser.
+
+### Architecture
+
+Single page with 3 files: `index.html`, `style.css`, `script.js`. All game logic is in `script.js` (~238 lines).
+
+**Game state** is a single `state` object at the top of `script.js`:
+```js
+{ board: Array(9), currentPlayer, gameActive, mode: 'pvp'|'ai', scores: {X, O, draw} }
+```
+
+**Two modes:**
+- `pvp` — Player vs Player, alternates between X and O
+- `ai` — Player (X) vs AI (O)
+
+**AI** uses the minimax algorithm (`minimax()` in `script.js`) — it is unbeatable at optimal play. `getBestMove()` calls minimax to find the best move for O. The board is represented as a flat 9-element array matching the 3×3 grid positions (0=top-left, 8=bottom-right).
+
+**Key functions in script.js:**
+- `makeMove(index)` — places a mark, checks win/draw, switches player or triggers AI
+- `checkWin()` — tests all 8 win combinations against current board
+- `endGame(isDraw, winCombo)` — updates scores, highlights winning cells, shows message
+- `minimax(board, depth, isMaximizing)` — recursive minimax for AI decisions
+- `spawnConfetti()` — CSS animation triggered on win
+
+Scores persist in the `state` object for the session only (no localStorage — resets on page refresh).
 
 ---
 
