@@ -91,11 +91,38 @@ Scores persist in the `state` object for the session only (no localStorage — r
 
 ---
 
-## Commit conventions
+## Git workflow
 
+After completing any meaningful piece of work, always commit and push to GitHub so progress is never lost and can be reverted at any point.
+
+```bash
+git add <specific-files>      # stage only relevant files
+git commit -m "type: message" # clean commit message (see conventions below)
+git push                      # push immediately after every commit
 ```
-feat:   new feature
+
+**When to commit:**
+- After completing a feature or fix
+- Before making any significant refactor
+- After updating config or documentation
+- At the end of every working session
+
+**Commit message conventions:**
+```
+feat:   new feature or capability
 fix:    bug fix
-chore:  config, deps, setup
+chore:  config, deps, setup, tooling
 update: changes to existing features
+docs:   documentation only
 ```
+
+**Examples:**
+```
+feat: add budget limit warnings to dashboard
+fix: correct flat rate interest calculation for short tenures
+update: improve subscription due date badge colours
+chore: upgrade supabase-js to v3
+docs: update SETUP.md with Vercel env var steps
+```
+
+Always use specific, descriptive messages — never `git commit -m "update"` or `git commit -m "fix stuff"`. Each commit message should make sense on its own when reading `git log`.
