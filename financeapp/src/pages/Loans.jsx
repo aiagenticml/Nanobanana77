@@ -62,7 +62,7 @@ export default function Loans() {
             <p className="text-gray-800 font-medium mb-4">Delete this loan?</p>
             <div className="flex gap-2">
               <button onClick={() => setDeleting(null)} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>
-              <button onClick={() => { deleteLoan(deleting); setDeleting(null) }} className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Delete</button>
+              <button onClick={async () => { await deleteLoan(deleting); setDeleting(null) }} className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Delete</button>
             </div>
           </div>
         </div>

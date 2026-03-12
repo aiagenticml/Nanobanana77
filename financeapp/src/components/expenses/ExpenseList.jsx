@@ -99,8 +99,8 @@ export default function ExpenseList({ expenses, onDelete, onUpdate }) {
     setDeleting(id)
   }
 
-  function confirmDelete() {
-    onDelete(deleting)
+  async function confirmDelete() {
+    await onDelete(deleting)
     setDeleting(null)
   }
 
