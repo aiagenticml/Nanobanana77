@@ -6,7 +6,7 @@ import {
 } from '../../lib/loanCalc'
 import AmortizationTable from './AmortizationTable'
 
-export default function LoanCard({ loan, onDelete }) {
+export default function LoanCard({ loan, onDelete, onEdit }) {
   const [showTable, setShowTable] = useState(false)
 
   const monthly = useMemo(() => {
@@ -26,13 +26,13 @@ export default function LoanCard({ loan, onDelete }) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
       <div className="flex justify-between items-start">
-        <div>
+        <div className="cursor-pointer flex-1" onClick={() => onEdit?.(loan)}>
           <h3 className="font-semibold text-gray-800">{loan.name}</h3>
           <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
             {loan.loan_type === 'reducing' ? 'Reducing Balance' : 'Flat Rate'} · {loan.interest_rate}% p.a.
           </span>
         </div>
-        <button onClick={() => onDelete(loan.id)} className="text-gray-300 hover:text-red-400 text-xl leading-none">×</button>
+        <button onClick={() => onDelete(loan.id)} className="text-gray-300 hover:text-red-400 text-2xl leading-none p-1">×</button>
       </div>
 
       {/* Progress bar */}

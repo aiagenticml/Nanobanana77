@@ -122,7 +122,7 @@ export default function ExpenseList({ expenses, onDelete, onUpdate }) {
               <span className="font-semibold text-gray-800 text-sm whitespace-nowrap">
                 {formatAmount(e.amount, e.currency)}
               </span>
-              <button onClick={() => handleDelete(e.id)} className="text-gray-300 hover:text-red-400 text-lg leading-none">×</button>
+              <button onClick={() => handleDelete(e.id)} className="text-gray-300 hover:text-red-400 text-2xl leading-none p-1">×</button>
             </div>
           </div>
         ))}

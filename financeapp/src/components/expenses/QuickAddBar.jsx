@@ -9,13 +9,38 @@ export default function QuickAddBar({ onAdd }) {
 
   function parse(raw) {
     const tokens = raw.trim().split(/\s+/)
-    const amount = parseFloat(tokens[0])
-    if (isNaN(amount) || amount <= 0) return null
+    if (tokens.length === 0) return null
 
-    const categoryToken = tokens[1]?.toLowerCase()
-    const matched = CATEGORIES.find(c => c.toLowerCase() === categoryToken)
-    const category = matched ?? 'Other'
-    const notes = matched ? tokens.slice(2).join(' ') : tokens.slice(1).join(' ')
+    // Find the amount token (can be anywhere)
+    let amountIdx = -1
+    let amount = NaN
+    for (let i = 0; i < tokens.length; i++) {
+      const v = parseFloat(tokens[i])
+      if (!isNaN(v) && v > 0) {
+        amount = v
+        amountIdx = i
+        break
+      }
+    }
+    if (isNaN(amount)) return null
+
+    // Remaining tokens (everything except amount)
+    const rest = tokens.filter((_, i) => i !== amountIdx)
+
+    // Find category match in remaining tokens
+    let category = 'Other'
+    let categoryIdx = -1
+    for (let i = 0; i < rest.length; i++) {
+      const matched = CATEGORIES.find(c => c.toLowerCase() === rest[i].toLowerCase())
+      if (matched) {
+        category = matched
+        categoryIdx = i
+        break
+      }
+    }
+
+    // Notes = everything that's not the amount or category
+    const notes = rest.filter((_, i) => i !== categoryIdx).join(' ')
 
     return {
       date: new Date().toISOString().split('T')[0],
@@ -31,7 +56,7 @@ export default function QuickAddBar({ onAdd }) {
     setError('')
     const data = parse(input)
     if (!data) {
-      setError('Format: amount [category] [notes] — e.g. "12.50 food hawker lunch"')
+      setError('Include an amount — e.g. "12.50 food hawker lunch" or "food 12.50 lunch"')
       return
     }
     try {
@@ -49,7 +74,7 @@ export default function QuickAddBar({ onAdd }) {
           type="text"
           value={input}
           onChange={e => { setInput(e.target.value); setError('') }}
-          placeholder='Quick add: "12.50 food hawker lunch"'
+          placeholder='Quick add: "12.50 food lunch" or "food 12.50"'
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
         />
         {error && <p className="text-xs text-red-500 mt-1">{error}</p>}

@@ -7,7 +7,7 @@ import Modal from '../components/shared/Modal'
 import { formatAmount } from '../lib/currencyUtils'
 
 export default function Subscriptions() {
-  const { defaultCurrency } = useContext(SettingsContext)
+  const { defaultCurrency, showToast } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
   const { subscriptions, loading, addSubscription, updateSubscription, deleteSubscription, markPaid } = useSubscriptions()
 
@@ -24,6 +24,12 @@ export default function Subscriptions() {
   async function handleAdd(data) {
     await addSubscription(data)
     setShowForm(false)
+    showToast('Subscription added')
+  }
+
+  async function handleMarkPaid(sub) {
+    await markPaid(sub)
+    showToast('Marked as paid')
   }
 
   return (
@@ -44,7 +50,7 @@ export default function Subscriptions() {
         <SubscriptionList
           subscriptions={subscriptions}
           onDelete={deleteSubscription}
-          onMarkPaid={markPaid}
+          onMarkPaid={handleMarkPaid}
           onUpdate={updateSubscription}
         />
       )}

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
+import { SettingsContext } from '../App'
 import { useLoans } from '../hooks/useLoans'
 import LoanCard from '../components/loans/LoanCard'
 import LoanForm from '../components/loans/LoanForm'
@@ -6,13 +7,22 @@ import Modal from '../components/shared/Modal'
 import EmptyState from '../components/shared/EmptyState'
 
 export default function Loans() {
+  const { showToast } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
-  const { loans, loading, addLoan, deleteLoan } = useLoans()
+  const { loans, loading, addLoan, updateLoan, deleteLoan } = useLoans()
 
   async function handleAdd(data) {
     await addLoan(data)
     setShowForm(false)
+    showToast('Loan added')
+  }
+
+  async function handleEdit(data) {
+    await updateLoan(editing.id, data)
+    setEditing(null)
+    showToast('Loan updated')
   }
 
   return (
@@ -29,7 +39,7 @@ export default function Loans() {
       ) : (
         <div className="space-y-3">
           {loans.map(loan => (
-            <LoanCard key={loan.id} loan={loan} onDelete={id => setDeleting(id)} />
+            <LoanCard key={loan.id} loan={loan} onDelete={id => setDeleting(id)} onEdit={setEditing} />
           ))}
         </div>
       )}
@@ -37,6 +47,12 @@ export default function Loans() {
       {showForm && (
         <Modal title="Add Loan" onClose={() => setShowForm(false)}>
           <LoanForm onSubmit={handleAdd} onCancel={() => setShowForm(false)} />
+        </Modal>
+      )}
+
+      {editing && (
+        <Modal title="Edit Loan" onClose={() => setEditing(null)}>
+          <LoanForm loan={editing} onSubmit={handleEdit} onCancel={() => setEditing(null)} />
         </Modal>
       )}
 

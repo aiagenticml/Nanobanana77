@@ -1,18 +1,19 @@
 import { useState, useContext } from 'react'
 import { SettingsContext } from '../../App'
 
-export default function LoanForm({ onSubmit, onCancel }) {
+export default function LoanForm({ loan, onSubmit, onCancel }) {
   const { defaultCurrency } = useContext(SettingsContext)
   const today = new Date().toISOString().split('T')[0]
+  const isEdit = !!loan
 
   const [form, setForm] = useState({
-    name: '',
-    principal: '',
-    interest_rate: '',
-    term_months: '',
-    start_date: today,
-    loan_type: 'reducing',
-    currency: defaultCurrency,
+    name: loan?.name ?? '',
+    principal: loan ? String(loan.principal) : '',
+    interest_rate: loan ? String(loan.interest_rate) : '',
+    term_months: loan ? String(loan.term_months) : '',
+    start_date: loan?.start_date ?? today,
+    loan_type: loan?.loan_type ?? 'reducing',
+    currency: loan?.currency ?? defaultCurrency,
   })
   const [saving, setSaving] = useState(false)
 
@@ -112,7 +113,7 @@ export default function LoanForm({ onSubmit, onCancel }) {
           className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>
         <button type="submit" disabled={saving}
           className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-          {saving ? 'Saving...' : 'Add Loan'}
+          {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Loan'}
         </button>
       </div>
     </form>

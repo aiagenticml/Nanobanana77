@@ -112,8 +112,8 @@ export default function SubscriptionList({ subscriptions, onDelete, onMarkPaid, 
                   {formatAmount(sub.amount, sub.currency)}
                 </span>
                 <button onClick={() => onMarkPaid(sub)}
-                  className="text-xs text-green-600 hover:text-green-700 border border-green-200 rounded px-1.5 py-0.5">Paid</button>
-                <button onClick={() => setDeleting(sub.id)} className="text-gray-300 hover:text-red-400 text-lg leading-none">×</button>
+                  className="text-xs text-green-600 hover:text-green-700 border border-green-200 rounded-lg px-3 py-1.5 font-medium">Paid</button>
+                <button onClick={() => setDeleting(sub.id)} className="text-gray-300 hover:text-red-400 text-2xl leading-none p-1">×</button>
               </div>
             </div>
           )
