@@ -38,13 +38,14 @@ export default function SubscriptionForm({ onSubmit, onCancel }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
         <input type="text" placeholder="e.g. Netflix, Spotify, iCloud" value={form.name}
           onChange={e => set('name', e.target.value)}
+          maxLength={200}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
       </div>
 
       <div className="flex gap-2">
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-          <input type="number" step="0.01" min="0" placeholder="0.00" value={form.amount}
+          <input type="number" step="0.01" min="0" max="100000000" placeholder="0.00" value={form.amount}
             onChange={e => set('amount', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
         </div>

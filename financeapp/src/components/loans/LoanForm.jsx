@@ -44,6 +44,7 @@ export default function LoanForm({ loan, onSubmit, onCancel }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Loan Name</label>
         <input type="text" placeholder="e.g. Car Loan, DBS Personal Loan" value={form.name}
           onChange={e => set('name', e.target.value)}
+          maxLength={200}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
       </div>
 
@@ -72,7 +73,7 @@ export default function LoanForm({ loan, onSubmit, onCancel }) {
           Principal Amount ({defaultCurrency})
           <span className="font-normal text-gray-400"> — the total amount you borrowed</span>
         </label>
-        <input type="number" step="0.01" min="0" placeholder="50000" value={form.principal}
+        <input type="number" step="0.01" min="0" max="100000000" placeholder="50000" value={form.principal}
           onChange={e => set('principal', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
       </div>
@@ -84,7 +85,7 @@ export default function LoanForm({ loan, onSubmit, onCancel }) {
             {isReducing ? ' — e.g. 4.5 for 4.5% p.a.' : ' — flat rate p.a., e.g. 3.5 means you pay 3.5% of principal each year'}
           </span>
         </label>
-        <input type="number" step="0.01" min="0" placeholder={isReducing ? '4.5' : '3.5'} value={form.interest_rate}
+        <input type="number" step="0.01" min="0" max="100" placeholder={isReducing ? '4.5' : '3.5'} value={form.interest_rate}
           onChange={e => set('interest_rate', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
       </div>
@@ -94,7 +95,7 @@ export default function LoanForm({ loan, onSubmit, onCancel }) {
           Loan Tenure
           <span className="font-normal text-gray-400"> — total number of months to repay</span>
         </label>
-        <input type="number" min="1" placeholder="60 (= 5 years)" value={form.term_months}
+        <input type="number" min="1" max="600" placeholder="60 (= 5 years)" value={form.term_months}
           onChange={e => set('term_months', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
       </div>

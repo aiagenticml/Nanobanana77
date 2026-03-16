@@ -41,6 +41,7 @@ export default function Settings() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
             <input type="text" value={userName} onChange={e => setUserName(e.target.value)}
               placeholder="e.g. John"
+              maxLength={100}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
           </div>
           <div>

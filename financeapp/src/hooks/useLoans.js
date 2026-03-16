@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { validateLoan } from '../lib/validation'
 
 export function useLoans() {
   const [loans, setLoans] = useState([])
@@ -17,12 +18,14 @@ export function useLoans() {
   useEffect(() => { fetch() }, [fetch])
 
   async function addLoan(data) {
+    validateLoan(data)
     const { error } = await supabase.from('loans').insert([data])
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function updateLoan(id, data) {
+    validateLoan(data)
     const { error } = await supabase.from('loans').update(data).eq('id', id)
     if (error) throw new Error(error.message)
     await fetch()

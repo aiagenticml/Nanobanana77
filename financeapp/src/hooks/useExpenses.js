@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { validateExpense } from '../lib/validation'
 
 export function useExpenses(filters = {}) {
   const [expenses, setExpenses] = useState([])
@@ -30,12 +31,14 @@ export function useExpenses(filters = {}) {
   useEffect(() => { fetch() }, [fetch])
 
   async function addExpense(data) {
+    validateExpense(data)
     const { error } = await supabase.from('expenses').insert([data])
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function updateExpense(id, data) {
+    validateExpense(data)
     const { error } = await supabase.from('expenses').update(data).eq('id', id)
     if (error) throw new Error(error.message)
     await fetch()

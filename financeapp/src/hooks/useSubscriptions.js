@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { validateSubscription } from '../lib/validation'
 
 export function daysUntilDue(nextDueDate) {
   const today = new Date()
@@ -28,12 +29,14 @@ export function useSubscriptions() {
   useEffect(() => { fetch() }, [fetch])
 
   async function addSubscription(data) {
+    validateSubscription(data)
     const { error } = await supabase.from('subscriptions').insert([data])
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function updateSubscription(id, data) {
+    validateSubscription(data)
     const { error } = await supabase.from('subscriptions').update(data).eq('id', id)
     if (error) throw new Error(error.message)
     await fetch()

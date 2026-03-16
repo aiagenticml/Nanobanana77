@@ -125,6 +125,7 @@ export default function QuickAddBar({ onAdd }) {
             value={input}
             onChange={e => { setInput(e.target.value); setError('') }}
             placeholder='Quick add: "12.50 lunch" or "5 mrt"'
+            maxLength={200}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
           />
           {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
