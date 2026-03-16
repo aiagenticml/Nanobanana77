@@ -5,11 +5,12 @@ import SubscriptionList from '../components/subscriptions/SubscriptionList'
 import SubscriptionForm from '../components/subscriptions/SubscriptionForm'
 import Modal from '../components/shared/Modal'
 import { formatAmount } from '../lib/currencyUtils'
+import ErrorBanner from '../components/shared/ErrorBanner'
 
 export default function Subscriptions() {
   const { defaultCurrency, showToast } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
-  const { subscriptions, loading, addSubscription, updateSubscription, deleteSubscription, markPaid } = useSubscriptions()
+  const { subscriptions, loading, error, addSubscription, updateSubscription, deleteSubscription, markPaid } = useSubscriptions()
 
   const monthlyTotal = subscriptions
     .filter(s => s.currency === defaultCurrency)
@@ -34,6 +35,7 @@ export default function Subscriptions() {
 
   return (
     <div className="space-y-4">
+      <ErrorBanner message={error} />
       <div className="bg-blue-50 rounded-xl p-3 flex justify-between items-center">
         <span className="text-sm text-blue-700 font-medium">Est. monthly cost ({defaultCurrency})</span>
         <span className="font-bold text-blue-800">{formatAmount(monthlyTotal, defaultCurrency)}</span>

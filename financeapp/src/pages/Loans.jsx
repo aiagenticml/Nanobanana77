@@ -5,13 +5,14 @@ import LoanCard from '../components/loans/LoanCard'
 import LoanForm from '../components/loans/LoanForm'
 import Modal from '../components/shared/Modal'
 import EmptyState from '../components/shared/EmptyState'
+import ErrorBanner from '../components/shared/ErrorBanner'
 
 export default function Loans() {
   const { showToast } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
-  const { loans, loading, addLoan, updateLoan, deleteLoan } = useLoans()
+  const { loans, loading, error, addLoan, updateLoan, deleteLoan } = useLoans()
 
   async function handleAdd(data) {
     await addLoan(data)
@@ -27,6 +28,7 @@ export default function Loans() {
 
   return (
     <div className="space-y-4">
+      <ErrorBanner message={error} />
       <button onClick={() => setShowForm(true)}
         className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium">
         + Add Loan

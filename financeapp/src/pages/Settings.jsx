@@ -9,6 +9,7 @@ export default function Settings() {
   const [userName, setUserName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     supabase.from('settings').select('*').eq('id', 1).single().then(({ data }) => {
@@ -23,8 +24,11 @@ export default function Settings() {
   async function handleSave(e) {
     e.preventDefault()
     setSaving(true)
+    setSaveError('')
     const { error } = await supabase.from('settings').update({ default_currency: localCurrency, user_name: userName }).eq('id', 1)
-    if (!error) {
+    if (error) {
+      setSaveError(error.message || 'Failed to save settings')
+    } else {
       setDefaultCurrency(localCurrency)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -37,6 +41,11 @@ export default function Settings() {
       <div className="bg-white rounded-xl p-4 shadow-sm">
         <h2 className="font-semibold text-gray-800 mb-4">Preferences</h2>
         <form onSubmit={handleSave} className="space-y-4">
+          {saveError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <span className="text-sm text-red-700">{saveError}</span>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
             <input type="text" value={userName} onChange={e => setUserName(e.target.value)}
