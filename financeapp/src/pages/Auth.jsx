@@ -1,15 +1,18 @@
 import { useState, useRef } from 'react'
+import { supabase } from '../lib/supabase'
 
 const MAX_ATTEMPTS = 5
 const LOCKOUT_MS = 30000 // 30 seconds
 
 export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms }) {
   const [isSignUp, setIsSignUp] = useState(false)
+  const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [signUpSuccess, setSignUpSuccess] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const failedAttempts = useRef(0)
   const lockoutUntil = useRef(0)
 
@@ -48,6 +51,40 @@ export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms })
     }
   }
 
+  async function handleForgotPassword(e) {
+    e.preventDefault()
+    setError('')
+    if (!email) { setError('Please enter your email address'); return }
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) throw error
+      setResetSent(true)
+    } catch (err) {
+      setError(err.message || 'Failed to send reset email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (resetSent) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm p-6 w-full max-w-sm text-center">
+          <span className="text-4xl">📧</span>
+          <h2 className="text-lg font-bold text-gray-800 mt-3">Check your email</h2>
+          <p className="text-sm text-gray-500 mt-2">
+            We sent a password reset link to <strong>{email}</strong>. Click the link to reset your password.
+          </p>
+          <button onClick={() => { setIsForgotPassword(false); setResetSent(false) }}
+            className="mt-4 text-sm text-blue-600 hover:underline">
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (signUpSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -61,6 +98,47 @@ export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms })
             className="mt-4 text-sm text-blue-600 hover:underline">
             Back to sign in
           </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm p-6 w-full max-w-sm">
+          <div className="text-center mb-6">
+            <span className="text-4xl">🔑</span>
+            <h1 className="text-xl font-bold text-gray-800 mt-2">Reset Password</h1>
+            <p className="text-sm text-gray-500 mt-1">Enter your email to receive a reset link</p>
+          </div>
+
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <span className="text-sm text-red-700">{error}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com" required maxLength={254}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+
+            <button type="submit" disabled={loading}
+              className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-50">
+              {loading ? 'Please wait...' : 'Send Reset Link'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500 mt-4">
+            <button onClick={() => { setIsForgotPassword(false); setError('') }}
+              className="text-blue-600 hover:underline font-medium">
+              Back to sign in
+            </button>
+          </p>
         </div>
       </div>
     )
@@ -104,6 +182,15 @@ export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms })
             {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
         </form>
+
+        {!isSignUp && (
+          <p className="text-center text-sm mt-2">
+            <button onClick={() => { setIsForgotPassword(true); setError('') }}
+              className="text-gray-400 hover:text-blue-600 hover:underline text-xs">
+              Forgot password?
+            </button>
+          </p>
+        )}
 
         <p className="text-center text-sm text-gray-500 mt-4">
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
