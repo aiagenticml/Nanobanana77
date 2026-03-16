@@ -7,9 +7,9 @@ import Modal from '../components/shared/Modal'
 import { formatAmount } from '../lib/currencyUtils'
 
 export default function Subscriptions() {
-  const { defaultCurrency, showToast } = useContext(SettingsContext)
+  const { defaultCurrency, showToast, userId } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
-  const { subscriptions, loading, addSubscription, updateSubscription, deleteSubscription, markPaid } = useSubscriptions()
+  const { subscriptions, loading, addSubscription, updateSubscription, deleteSubscription, markPaid } = useSubscriptions(userId)
 
   const monthlyTotal = subscriptions
     .filter(s => s.currency === defaultCurrency)

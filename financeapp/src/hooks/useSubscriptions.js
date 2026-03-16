@@ -9,38 +9,40 @@ export function daysUntilDue(nextDueDate) {
   return Math.round((due - today) / (1000 * 60 * 60 * 24))
 }
 
-export function useSubscriptions() {
+export function useSubscriptions(userId) {
   const [subscriptions, setSubscriptions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const fetch = useCallback(async () => {
+    if (!userId) return
     setLoading(true)
     const { data, error } = await supabase
       .from('subscriptions')
       .select('*')
+      .eq('user_id', userId)
       .order('next_due_date', { ascending: true })
     if (error) setError(error.message)
     else setSubscriptions(data ?? [])
     setLoading(false)
-  }, [])
+  }, [userId])
 
   useEffect(() => { fetch() }, [fetch])
 
   async function addSubscription(data) {
-    const { error } = await supabase.from('subscriptions').insert([data])
+    const { error } = await supabase.from('subscriptions').insert([{ ...data, user_id: userId }])
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function updateSubscription(id, data) {
-    const { error } = await supabase.from('subscriptions').update(data).eq('id', id)
+    const { error } = await supabase.from('subscriptions').update(data).eq('id', id).eq('user_id', userId)
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function deleteSubscription(id) {
-    const { error } = await supabase.from('subscriptions').delete().eq('id', id)
+    const { error } = await supabase.from('subscriptions').delete().eq('id', id).eq('user_id', userId)
     if (error) throw new Error(error.message)
     await fetch()
   }
@@ -55,6 +57,7 @@ export function useSubscriptions() {
       .from('subscriptions')
       .update({ next_due_date: next.toISOString().split('T')[0] })
       .eq('id', sub.id)
+      .eq('user_id', userId)
     if (error) throw new Error(error.message)
     await fetch()
   }
