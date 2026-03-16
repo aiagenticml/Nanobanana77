@@ -9,7 +9,12 @@ export function useLoans() {
 
   const fetch = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase.from('loans').select('*').order('created_at', { ascending: false })
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
+    const { data, error } = await supabase.from('loans').select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
     if (error) setError(error.message)
     else setLoans(data ?? [])
     setLoading(false)
@@ -19,7 +24,8 @@ export function useLoans() {
 
   async function addLoan(data) {
     validateLoan(data)
-    const { error } = await supabase.from('loans').insert([data])
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase.from('loans').insert([{ ...data, user_id: user.id }])
     if (error) throw new Error(error.message)
     await fetch()
   }

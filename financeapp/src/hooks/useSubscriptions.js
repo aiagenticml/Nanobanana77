@@ -17,9 +17,13 @@ export function useSubscriptions() {
 
   const fetch = useCallback(async () => {
     setLoading(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
     const { data, error } = await supabase
       .from('subscriptions')
       .select('*')
+      .eq('user_id', user.id)
       .order('next_due_date', { ascending: true })
     if (error) setError(error.message)
     else setSubscriptions(data ?? [])
@@ -30,7 +34,8 @@ export function useSubscriptions() {
 
   async function addSubscription(data) {
     validateSubscription(data)
-    const { error } = await supabase.from('subscriptions').insert([data])
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase.from('subscriptions').insert([{ ...data, user_id: user.id }])
     if (error) throw new Error(error.message)
     await fetch()
   }

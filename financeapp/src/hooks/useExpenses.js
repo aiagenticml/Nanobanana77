@@ -9,7 +9,12 @@ export function useExpenses(filters = {}) {
 
   const fetch = useCallback(async () => {
     setLoading(true)
-    let query = supabase.from('expenses').select('*').order('date', { ascending: false })
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
+    let query = supabase.from('expenses').select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
 
     if (filters.month) {
       const [year, month] = filters.month.split('-')
@@ -32,7 +37,8 @@ export function useExpenses(filters = {}) {
 
   async function addExpense(data) {
     validateExpense(data)
-    const { error } = await supabase.from('expenses').insert([data])
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase.from('expenses').insert([{ ...data, user_id: user.id }])
     if (error) throw new Error(error.message)
     await fetch()
   }

@@ -4,18 +4,20 @@ import { CURRENCIES } from '../lib/currencyUtils'
 import { supabase } from '../lib/supabase'
 
 export default function Settings() {
-  const { defaultCurrency, setDefaultCurrency } = useContext(SettingsContext)
+  const { defaultCurrency, setDefaultCurrency, user, signOut } = useContext(SettingsContext)
   const [localCurrency, setLocalCurrency] = useState(defaultCurrency)
   const [userName, setUserName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
-    supabase.from('settings').select('*').eq('id', 1).single().then(({ data }) => {
+    if (!user) return
+    supabase.from('settings').select('*').eq('user_id', user.id).single().then(({ data }) => {
       if (data) setUserName(data.user_name ?? '')
     })
-  }, [])
+  }, [user])
 
   useEffect(() => {
     setLocalCurrency(defaultCurrency)
@@ -25,7 +27,11 @@ export default function Settings() {
     e.preventDefault()
     setSaving(true)
     setSaveError('')
-    const { error } = await supabase.from('settings').update({ default_currency: localCurrency, user_name: userName }).eq('id', 1)
+    const { error } = await supabase.from('settings').upsert({
+      user_id: user.id,
+      default_currency: localCurrency,
+      user_name: userName,
+    }, { onConflict: 'user_id' })
     if (error) {
       setSaveError(error.message || 'Failed to save settings')
     } else {
@@ -34,6 +40,15 @@ export default function Settings() {
       setTimeout(() => setSaved(false), 2000)
     }
     setSaving(false)
+  }
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    try {
+      await signOut()
+    } catch {
+      setSigningOut(false)
+    }
   }
 
   return (
@@ -70,14 +85,12 @@ export default function Settings() {
       </div>
 
       <div className="bg-white rounded-xl p-4 shadow-sm">
-        <h2 className="font-semibold text-gray-800 mb-2">Supabase Setup</h2>
-        <p className="text-xs text-gray-500 leading-relaxed">
-          This app uses Supabase for data storage. Create a <code>.env.local</code> file in the project root with:
-        </p>
-        <pre className="bg-gray-50 rounded-lg p-3 text-xs text-gray-700 mt-2 overflow-x-auto">
-{`VITE_SUPABASE_URL=your-url
-VITE_SUPABASE_ANON_KEY=your-anon-key`}
-        </pre>
+        <h2 className="font-semibold text-gray-800 mb-2">Account</h2>
+        <p className="text-xs text-gray-500 mb-3">Signed in as <strong>{user?.email}</strong></p>
+        <button onClick={handleSignOut} disabled={signingOut}
+          className="w-full py-2.5 border border-red-300 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 disabled:opacity-50">
+          {signingOut ? 'Signing out...' : 'Sign Out'}
+        </button>
       </div>
     </div>
   )

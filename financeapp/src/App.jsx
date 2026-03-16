@@ -1,5 +1,6 @@
 import { useState, createContext, useEffect, useCallback } from 'react'
 import { supabase } from './lib/supabase'
+import { useAuth } from './hooks/useAuth'
 import TopBar from './components/layout/TopBar'
 import BottomNav from './components/layout/BottomNav'
 import Toast from './components/shared/Toast'
@@ -8,11 +9,15 @@ import Expenses from './pages/Expenses'
 import Loans from './pages/Loans'
 import Subscriptions from './pages/Subscriptions'
 import Settings from './pages/Settings'
+import Auth from './pages/Auth'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 
 export const SettingsContext = createContext({
   defaultCurrency: 'SGD',
   setDefaultCurrency: () => {},
   showToast: () => {},
+  user: null,
 })
 
 const PAGE_TITLES = {
@@ -28,20 +33,49 @@ function TabPanel({ active, children }) {
 }
 
 export default function App() {
+  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const [tab, setTab] = useState('dashboard')
   const [defaultCurrency, setDefaultCurrency] = useState('SGD')
   const [toast, setToast] = useState('')
+  const [legalPage, setLegalPage] = useState(null) // 'privacy' | 'terms' | null
 
   const showToast = useCallback((msg) => setToast(msg), [])
 
   useEffect(() => {
-    supabase.from('settings').select('default_currency').eq('id', 1).single().then(({ data }) => {
+    if (!user) return
+    supabase.from('settings').select('default_currency').eq('user_id', user.id).single().then(({ data }) => {
       if (data?.default_currency) setDefaultCurrency(data.default_currency)
     })
-  }, [])
+  }, [user])
+
+  if (legalPage === 'privacy') {
+    return <PrivacyPolicy onBack={() => setLegalPage(null)} />
+  }
+  if (legalPage === 'terms') {
+    return <TermsOfService onBack={() => setLegalPage(null)} />
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Auth
+        onSignIn={signIn}
+        onSignUp={signUp}
+        onShowPrivacy={() => setLegalPage('privacy')}
+        onShowTerms={() => setLegalPage('terms')}
+      />
+    )
+  }
 
   return (
-    <SettingsContext.Provider value={{ defaultCurrency, setDefaultCurrency, showToast }}>
+    <SettingsContext.Provider value={{ defaultCurrency, setDefaultCurrency, showToast, user, signOut }}>
       <div className="min-h-screen bg-gray-50 flex flex-col max-w-lg mx-auto">
         <TopBar title={PAGE_TITLES[tab]} />
         <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
