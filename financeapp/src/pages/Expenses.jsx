@@ -24,12 +24,12 @@ function formatMonth(ym) {
 }
 
 export default function Expenses() {
-  const { defaultCurrency, showToast } = useContext(SettingsContext)
+  const { defaultCurrency, showToast, userId } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState('')
   const months = useMemo(() => generateMonths(24), [])
   const [month, setMonth] = useState(months[0])
-  const { expenses, loading, error, addExpense, updateExpense, deleteExpense, totalForMonth } = useExpenses({ month, category: categoryFilter || undefined })
+  const { expenses, loading, error, addExpense, updateExpense, deleteExpense, totalForMonth } = useExpenses(userId, { month, category: categoryFilter || undefined })
 
   async function handleAdd(data) {
     await addExpense(data)

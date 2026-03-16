@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useExpenses(filters = {}) {
+export function useExpenses(userId, filters = {}) {
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const fetch = useCallback(async () => {
+    if (!userId) return
     setLoading(true)
-    let query = supabase.from('expenses').select('*').order('date', { ascending: false })
+    let query = supabase.from('expenses').select('*').eq('user_id', userId).order('date', { ascending: false })
 
     if (filters.month) {
       const [year, month] = filters.month.split('-')
@@ -25,24 +26,24 @@ export function useExpenses(filters = {}) {
     if (error) setError(error.message)
     else setExpenses(data ?? [])
     setLoading(false)
-  }, [filters.month, filters.category])
+  }, [userId, filters.month, filters.category])
 
   useEffect(() => { fetch() }, [fetch])
 
   async function addExpense(data) {
-    const { error } = await supabase.from('expenses').insert([data])
+    const { error } = await supabase.from('expenses').insert([{ ...data, user_id: userId }])
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function updateExpense(id, data) {
-    const { error } = await supabase.from('expenses').update(data).eq('id', id)
+    const { error } = await supabase.from('expenses').update(data).eq('id', id).eq('user_id', userId)
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function deleteExpense(id) {
-    const { error } = await supabase.from('expenses').delete().eq('id', id)
+    const { error } = await supabase.from('expenses').delete().eq('id', id).eq('user_id', userId)
     if (error) throw new Error(error.message)
     await fetch()
   }

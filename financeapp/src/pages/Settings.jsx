@@ -4,17 +4,18 @@ import { CURRENCIES } from '../lib/currencyUtils'
 import { supabase } from '../lib/supabase'
 
 export default function Settings() {
-  const { defaultCurrency, setDefaultCurrency } = useContext(SettingsContext)
+  const { defaultCurrency, setDefaultCurrency, userId } = useContext(SettingsContext)
   const [localCurrency, setLocalCurrency] = useState(defaultCurrency)
   const [userName, setUserName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    supabase.from('settings').select('*').eq('id', 1).single().then(({ data }) => {
+    if (!userId) return
+    supabase.from('settings').select('*').eq('user_id', userId).single().then(({ data }) => {
       if (data) setUserName(data.user_name ?? '')
     })
-  }, [])
+  }, [userId])
 
   useEffect(() => {
     setLocalCurrency(defaultCurrency)
@@ -23,7 +24,10 @@ export default function Settings() {
   async function handleSave(e) {
     e.preventDefault()
     setSaving(true)
-    const { error } = await supabase.from('settings').update({ default_currency: localCurrency, user_name: userName }).eq('id', 1)
+    const { error } = await supabase.from('settings').upsert(
+      { user_id: userId, default_currency: localCurrency, user_name: userName },
+      { onConflict: 'user_id' }
+    )
     if (!error) {
       setDefaultCurrency(localCurrency)
       setSaved(true)

@@ -7,11 +7,11 @@ import Modal from '../components/shared/Modal'
 import EmptyState from '../components/shared/EmptyState'
 
 export default function Loans() {
-  const { showToast } = useContext(SettingsContext)
+  const { showToast, userId } = useContext(SettingsContext)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
-  const { loans, loading, addLoan, updateLoan, deleteLoan } = useLoans()
+  const { loans, loading, addLoan, updateLoan, deleteLoan } = useLoans(userId)
 
   async function handleAdd(data) {
     await addLoan(data)

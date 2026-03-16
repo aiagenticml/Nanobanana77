@@ -13,11 +13,11 @@ const CATEGORY_COLORS = {
 }
 
 export default function Dashboard() {
-  const { defaultCurrency } = useContext(SettingsContext)
+  const { defaultCurrency, userId } = useContext(SettingsContext)
   const currentMonth = new Date().toISOString().slice(0, 7)
-  const { expenses, totalForMonth, totalByCategory, loading: expLoading } = useExpenses({ month: currentMonth })
-  const { loans, loading: loanLoading } = useLoans()
-  const { subscriptions, loading: subLoading } = useSubscriptions()
+  const { expenses, totalForMonth, totalByCategory, loading: expLoading } = useExpenses(userId, { month: currentMonth })
+  const { loans, loading: loanLoading } = useLoans(userId)
+  const { subscriptions, loading: subLoading } = useSubscriptions(userId)
 
   const loading = expLoading || loanLoading || subLoading
 
