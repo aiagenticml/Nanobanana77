@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { requireUser } from '../lib/authGuard'
 import { validateSubscription } from '../lib/validation'
 
 export function daysUntilDue(nextDueDate) {
@@ -17,24 +18,28 @@ export function useSubscriptions() {
 
   const fetch = useCallback(async () => {
     setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
-
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('next_due_date', { ascending: true })
-    if (error) setError(error.message)
-    else setSubscriptions(data ?? [])
-    setLoading(false)
+    try {
+      const user = await requireUser()
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('next_due_date', { ascending: true })
+        .limit(100)
+      if (error) setError(error.message)
+      else setSubscriptions(data ?? [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { fetch() }, [fetch])
 
   async function addSubscription(data) {
     validateSubscription(data)
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await requireUser()
     const { error } = await supabase.from('subscriptions').insert([{ ...data, user_id: user.id }])
     if (error) throw new Error(error.message)
     await fetch()
@@ -42,18 +47,21 @@ export function useSubscriptions() {
 
   async function updateSubscription(id, data) {
     validateSubscription(data)
-    const { error } = await supabase.from('subscriptions').update(data).eq('id', id)
+    const user = await requireUser()
+    const { error } = await supabase.from('subscriptions').update(data).eq('id', id).eq('user_id', user.id)
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function deleteSubscription(id) {
-    const { error } = await supabase.from('subscriptions').delete().eq('id', id)
+    const user = await requireUser()
+    const { error } = await supabase.from('subscriptions').delete().eq('id', id).eq('user_id', user.id)
     if (error) throw new Error(error.message)
     await fetch()
   }
 
   async function markPaid(sub) {
+    const user = await requireUser()
     const next = new Date(sub.next_due_date)
     if (sub.billing_cycle === 'monthly') next.setMonth(next.getMonth() + 1)
     else if (sub.billing_cycle === 'yearly') next.setFullYear(next.getFullYear() + 1)
@@ -63,6 +71,7 @@ export function useSubscriptions() {
       .from('subscriptions')
       .update({ next_due_date: next.toISOString().split('T')[0] })
       .eq('id', sub.id)
+      .eq('user_id', user.id)
     if (error) throw new Error(error.message)
     await fetch()
   }

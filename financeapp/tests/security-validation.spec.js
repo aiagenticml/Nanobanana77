@@ -27,9 +27,9 @@ test.describe('Auth screen', () => {
     await expect(email).toHaveAttribute('maxlength', '254')
   })
 
-  test('password field enforces minLength of 6 and maxLength of 128', async ({ page }) => {
+  test('password field enforces minLength of 8 and maxLength of 128', async ({ page }) => {
     const pw = page.locator('input[type="password"]')
-    await expect(pw).toHaveAttribute('minlength', '6')
+    await expect(pw).toHaveAttribute('minlength', '8')
     await expect(pw).toHaveAttribute('maxlength', '128')
   })
 

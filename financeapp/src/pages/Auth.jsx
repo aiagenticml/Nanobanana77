@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+
+const MAX_ATTEMPTS = 5
+const LOCKOUT_MS = 30000 // 30 seconds
 
 export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms }) {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -7,20 +10,39 @@ export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [signUpSuccess, setSignUpSuccess] = useState(false)
+  const failedAttempts = useRef(0)
+  const lockoutUntil = useRef(0)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    // Brute force protection
+    if (Date.now() < lockoutUntil.current) {
+      const secs = Math.ceil((lockoutUntil.current - Date.now()) / 1000)
+      setError(`Too many attempts. Try again in ${secs} seconds.`)
+      return
+    }
+
     setLoading(true)
     try {
       if (isSignUp) {
         await onSignUp(email, password)
         setSignUpSuccess(true)
+        failedAttempts.current = 0
       } else {
         await onSignIn(email, password)
+        failedAttempts.current = 0
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong')
+      failedAttempts.current++
+      if (failedAttempts.current >= MAX_ATTEMPTS) {
+        lockoutUntil.current = Date.now() + LOCKOUT_MS
+        setError(`Too many failed attempts. Locked out for 30 seconds.`)
+        failedAttempts.current = 0
+      } else {
+        setError(err.message || 'Something went wrong')
+      }
     } finally {
       setLoading(false)
     }
@@ -72,8 +94,8 @@ export default function Auth({ onSignIn, onSignUp, onShowPrivacy, onShowTerms })
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-              placeholder={isSignUp ? 'Min 6 characters' : 'Your password'}
-              required minLength={6} maxLength={128}
+              placeholder={isSignUp ? 'Min 8 characters' : 'Your password'}
+              required minLength={8} maxLength={128}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
           </div>
 

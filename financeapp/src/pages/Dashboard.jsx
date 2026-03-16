@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 import { SettingsContext } from '../App'
 import { useExpenses } from '../hooks/useExpenses'
 import { useLoans } from '../hooks/useLoans'
@@ -21,12 +21,25 @@ export default function Dashboard() {
 
   const loading = expLoading || loanLoading || subLoading
 
-  const totalDebt = loans
-    .filter(l => (l.currency ?? defaultCurrency) === defaultCurrency)
-    .reduce((sum, l) => sum + getRemainingBalance(l), 0)
+  const totalDebt = useMemo(() =>
+    loans
+      .filter(l => (l.currency ?? defaultCurrency) === defaultCurrency)
+      .reduce((sum, l) => sum + getRemainingBalance(l), 0),
+    [loans, defaultCurrency]
+  )
+
   const monthTotal = totalForMonth(defaultCurrency)
   const byCategory = totalByCategory(defaultCurrency)
-  const upcomingSubs = subscriptions.filter(s => daysUntilDue(s.next_due_date) <= 7)
+
+  const sortedCategories = useMemo(() =>
+    Object.entries(byCategory).sort((a, b) => b[1] - a[1]),
+    [byCategory]
+  )
+
+  const upcomingSubs = useMemo(() =>
+    subscriptions.filter(s => daysUntilDue(s.next_due_date) <= 7),
+    [subscriptions]
+  )
 
   if (loading) {
     return <div className="text-center text-gray-400 py-16 text-sm">Loading...</div>
@@ -40,21 +53,19 @@ export default function Dashboard() {
         <p className="text-3xl font-bold text-gray-800">{formatAmount(monthTotal, defaultCurrency)}</p>
         <p className="text-xs text-gray-400 mt-1">{currentMonth} · {expenses.length} transactions</p>
 
-        {Object.keys(byCategory).length > 0 && (
+        {sortedCategories.length > 0 && (
           <div className="mt-3 space-y-2">
-            {Object.entries(byCategory)
-              .sort((a, b) => b[1] - a[1])
-              .map(([cat, amt]) => (
-                <div key={cat} className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[cat] ?? 'bg-gray-300'}`} />
-                  <span className="text-xs text-gray-600 flex-1">{cat}</span>
-                  <span className="text-xs font-medium text-gray-800">{formatAmount(amt, defaultCurrency)}</span>
-                  <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${CATEGORY_COLORS[cat] ?? 'bg-gray-300'}`}
-                      style={{ width: `${monthTotal > 0 ? (amt / monthTotal) * 100 : 0}%` }} />
-                  </div>
+            {sortedCategories.map(([cat, amt]) => (
+              <div key={cat} className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[cat] ?? 'bg-gray-300'}`} />
+                <span className="text-xs text-gray-600 flex-1">{cat}</span>
+                <span className="text-xs font-medium text-gray-800">{formatAmount(amt, defaultCurrency)}</span>
+                <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full ${CATEGORY_COLORS[cat] ?? 'bg-gray-300'}`}
+                    style={{ width: `${monthTotal > 0 ? (amt / monthTotal) * 100 : 0}%` }} />
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         )}
       </div>
