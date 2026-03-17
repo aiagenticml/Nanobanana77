@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a monorepo containing multiple independent projects:
 
 - `financeapp/` — Personal finance planner (React + Vite + Tailwind + Supabase)
+- `tradingjournal/` — Trading journal & analytics app (React + Vite + Tailwind + Supabase)
 - `tictactoe/` — Browser-based Tic Tac Toe (vanilla HTML/CSS/JS)
 
 ---
@@ -58,6 +59,55 @@ Without these, the app will fail to load. See `financeapp/.env.local.example`.
 ### Deployment
 
 Hosted on Vercel. Auto-deploys on push to `main`. Root directory must be set to `financeapp` in Vercel project settings. The same two env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) must be added in Vercel's environment variable settings.
+
+---
+
+## tradingjournal
+
+### Commands
+
+All commands must be run from inside `tradingjournal/`:
+
+```bash
+npm run dev        # Start local dev server at http://localhost:5173
+npm run build      # Production build (outputs to dist/)
+npm run lint       # Run ESLint
+npm run preview    # Preview the production build locally
+```
+
+### Environment
+
+Requires a `.env.local` file in `tradingjournal/` with:
+```
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+### Architecture
+
+Same stack and patterns as `financeapp/` — tab-based SPA, no React Router, custom hooks for Supabase CRUD, Tailwind styling.
+
+**4 tabs:** Dashboard · Trade Log · Journal · Settings
+
+**Data layer** — single `useTrades` hook (`src/hooks/useTrades.js`) handles all CRUD. Filters: month, instrument, direction, setup_tag.
+
+**Trade analytics** live in `src/lib/tradeCalc.js` as pure functions: `calcPnL`, `getWinRate`, `getProfitFactor`, `getAvgRR`, `getEquityCurve`, `getMaxDrawdown`, `getStreaks`, `getTotalPnL`.
+
+**Instruments supported:** Forex, Futures.
+
+**P&L** is auto-calculated from entry/exit prices + size + direction, but can be manually overridden.
+
+### Supabase Setup
+
+The `trades` table SQL is displayed in the Settings tab of the app, and also as a comment in `src/lib/supabase.js`. The `uploads` bucket (public) is used for trade screenshots.
+
+### Key files
+
+- `src/App.jsx` — tab shell + SettingsContext
+- `src/lib/tradeCalc.js` — all analytics math
+- `src/lib/supabase.js` — Supabase client + table creation SQL comment
+- `src/hooks/useTrades.js` — CRUD hook with filters
+- `src/components/trades/TradeForm.jsx` — add/edit form with auto P&L calculation
 
 ---
 
