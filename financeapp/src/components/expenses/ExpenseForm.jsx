@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react'
 import { SettingsContext } from '../../App'
 import { CURRENCIES } from '../../lib/currencyUtils'
+import ImageUpload from '../shared/ImageUpload'
 
 export const CATEGORIES = [
   'Food', 'Transport', 'Shopping', 'Entertainment', 'Health',
@@ -17,6 +18,7 @@ export default function ExpenseForm({ onSubmit, onCancel }) {
     category: 'Food',
     notes: '',
     currency: defaultCurrency,
+    receipt_url: null,
   })
   const [saving, setSaving] = useState(false)
 
@@ -70,6 +72,8 @@ export default function ExpenseForm({ onSubmit, onCancel }) {
           onChange={e => set('notes', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
       </div>
+      <ImageUpload label="Receipt (optional)" value={form.receipt_url}
+        onChange={url => set('receipt_url', url)} folder="receipts" />
       <div className="flex gap-2 pt-2">
         <button type="button" onClick={onCancel}
           className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>

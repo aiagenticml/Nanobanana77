@@ -1,5 +1,6 @@
 import { useState, useContext } from 'react'
 import { SettingsContext } from '../../App'
+import ImageUpload from '../shared/ImageUpload'
 
 export default function LoanForm({ loan, onSubmit, onCancel }) {
   const { defaultCurrency } = useContext(SettingsContext)
@@ -14,6 +15,7 @@ export default function LoanForm({ loan, onSubmit, onCancel }) {
     start_date: loan?.start_date ?? today,
     loan_type: loan?.loan_type ?? 'reducing',
     currency: loan?.currency ?? defaultCurrency,
+    statement_url: loan?.statement_url ?? null,
   })
   const [saving, setSaving] = useState(false)
 
@@ -107,6 +109,9 @@ export default function LoanForm({ loan, onSubmit, onCancel }) {
         <input type="date" value={form.start_date} onChange={e => set('start_date', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
       </div>
+
+      <ImageUpload label="Loan Statement (optional)" value={form.statement_url}
+        onChange={url => set('statement_url', url)} folder="statements" />
 
       <div className="flex gap-2 pt-2">
         <button type="button" onClick={onCancel}

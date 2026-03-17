@@ -8,6 +8,7 @@ import AmortizationTable from './AmortizationTable'
 
 export default function LoanCard({ loan, onDelete, onEdit }) {
   const [showTable, setShowTable] = useState(false)
+  const [viewingStatement, setViewingStatement] = useState(false)
 
   const monthly = useMemo(() => {
     return loan.loan_type === 'flat'
@@ -61,12 +62,27 @@ export default function LoanCard({ loan, onDelete, onEdit }) {
         </div>
       </div>
 
-      <button onClick={() => setShowTable(v => !v)}
-        className="text-xs text-blue-600 hover:underline w-full text-left">
-        {showTable ? 'Hide' : 'Show'} amortization schedule
-      </button>
+      <div className="flex gap-3">
+        <button onClick={() => setShowTable(v => !v)}
+          className="text-xs text-blue-600 hover:underline">
+          {showTable ? 'Hide' : 'Show'} amortization schedule
+        </button>
+        {loan.statement_url && (
+          <button onClick={() => setViewingStatement(true)}
+            className="text-xs text-blue-600 hover:underline">
+            View statement
+          </button>
+        )}
+      </div>
 
       {showTable && <AmortizationTable loan={loan} currency={currency} />}
+
+      {viewingStatement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setViewingStatement(false)}>
+          <img src={loan.statement_url} alt="Loan Statement" className="max-w-full max-h-full rounded-lg" />
+        </div>
+      )}
     </div>
   )
 }

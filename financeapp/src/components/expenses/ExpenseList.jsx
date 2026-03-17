@@ -3,6 +3,7 @@ import { formatAmount } from '../../lib/currencyUtils'
 import { CURRENCIES } from '../../lib/currencyUtils'
 import EmptyState from '../shared/EmptyState'
 import Modal from '../shared/Modal'
+import ImageUpload from '../shared/ImageUpload'
 import { CATEGORIES } from './ExpenseForm'
 
 const CATEGORY_COLORS = {
@@ -25,6 +26,7 @@ function EditExpenseForm({ expense, onSave, onCancel }) {
     category: expense.category,
     notes: expense.notes ?? '',
     currency: expense.currency ?? 'SGD',
+    receipt_url: expense.receipt_url ?? null,
   })
   const [saving, setSaving] = useState(false)
 
@@ -72,6 +74,8 @@ function EditExpenseForm({ expense, onSave, onCancel }) {
         <input type="text" value={form.notes} onChange={e => set('notes', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
       </div>
+      <ImageUpload label="Receipt" value={form.receipt_url}
+        onChange={url => set('receipt_url', url)} folder="receipts" />
       <div className="flex gap-2 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>
         <button type="submit" disabled={saving} className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
@@ -85,6 +89,7 @@ function EditExpenseForm({ expense, onSave, onCancel }) {
 export default function ExpenseList({ expenses, onDelete, onUpdate }) {
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
+  const [viewingReceipt, setViewingReceipt] = useState(null)
 
   if (expenses.length === 0) {
     return <EmptyState icon="💸" message="No expenses yet" sub="Use the quick add bar or tap + Add" />
@@ -109,6 +114,10 @@ export default function ExpenseList({ expenses, onDelete, onUpdate }) {
       <div className="space-y-2">
         {expenses.map(e => (
           <div key={e.id} className="bg-white rounded-xl p-3 flex items-center gap-3 shadow-sm">
+            {e.receipt_url && (
+              <img src={e.receipt_url} alt="Receipt" onClick={() => setViewingReceipt(e.receipt_url)}
+                className="w-10 h-10 rounded-lg object-cover border border-gray-200 cursor-pointer flex-shrink-0" />
+            )}
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setEditing(e)}>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[e.category] ?? CATEGORY_COLORS.Other}`}>
@@ -132,6 +141,13 @@ export default function ExpenseList({ expenses, onDelete, onUpdate }) {
         <Modal title="Edit Expense" onClose={() => setEditing(null)}>
           <EditExpenseForm expense={editing} onSave={handleSave} onCancel={() => setEditing(null)} />
         </Modal>
+      )}
+
+      {viewingReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setViewingReceipt(null)}>
+          <img src={viewingReceipt} alt="Receipt" className="max-w-full max-h-full rounded-lg" />
+        </div>
       )}
 
       {deleting && (
