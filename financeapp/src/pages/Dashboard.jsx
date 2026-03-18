@@ -6,54 +6,18 @@ import { useSubscriptions, daysUntilDue } from '../hooks/useSubscriptions'
 import { useVitamins, daysUntilRestock } from '../hooks/useVitamins'
 import { formatAmount } from '../lib/currencyUtils'
 import { getRemainingBalance } from '../lib/loanCalc'
+import PeriodSelector, { getDateRange } from '../components/shared/PeriodSelector'
 
-const CATEGORY_COLORS = {
-  Food: 'bg-orange-400', Transport: 'bg-blue-400', Shopping: 'bg-pink-400',
-  Entertainment: 'bg-purple-400', Health: 'bg-green-400', Education: 'bg-yellow-400',
-  Utilities: 'bg-gray-400', Groceries: 'bg-lime-400', Travel: 'bg-cyan-400', Other: 'bg-gray-300',
+// TODO: Replace with useBudgets hook in Task 9
+function useBudgetsStub() {
+  return { budget: null, items: [], loading: false, error: null }
 }
 
-const PERIODS = [
-  { key: 'daily', label: 'Daily' },
-  { key: 'weekly', label: 'Weekly' },
-  { key: 'monthly', label: 'Monthly' },
-]
-
-function getDateRange(period) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  if (period === 'daily') {
-    const dateStr = today.toISOString().split('T')[0]
-    return { startDate: dateStr, endDate: dateStr }
-  }
-
-  if (period === 'weekly') {
-    const day = today.getDay()
-    const monday = new Date(today)
-    monday.setDate(today.getDate() - ((day + 6) % 7))
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    return {
-      startDate: monday.toISOString().split('T')[0],
-      endDate: sunday.toISOString().split('T')[0],
-    }
-  }
-
-  // monthly
-  const year = today.getFullYear()
-  const month = today.getMonth() + 1
-  const lastDay = new Date(year, month, 0).getDate()
-  return {
-    startDate: `${year}-${String(month).padStart(2, '0')}-01`,
-    endDate: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
-  }
-}
-
-function getPeriodLabel(period) {
-  if (period === 'daily') return "Today's spending"
-  if (period === 'weekly') return "This week's spending"
-  return "This month's spending"
+// TODO: Replace with useCategories colorMap in Task 9
+const TEMP_CATEGORY_COLORS = {
+  Food: '#c47a5a', Transport: '#5a7a94', Shopping: '#94707a',
+  Entertainment: '#7a6a94', Health: '#7a8c6e', Education: '#c9a040',
+  Utilities: '#6b6058', Groceries: '#8c946e', Travel: '#5a8c8c', Other: '#9a8e80',
 }
 
 function getUpcomingPayments(subscriptions, months = 3) {
@@ -89,15 +53,17 @@ function getMonthLabel(date) {
 
 export default function Dashboard() {
   const { defaultCurrency } = useContext(SettingsContext)
-  const [period, setPeriod] = useState('monthly')
+  const [period, setPeriod] = useState('month')
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const [billsOpen, setBillsOpen] = useState(false)
   const [restockOpen, setRestockOpen] = useState(false)
 
-  const dateRange = useMemo(() => getDateRange(period), [period])
+  const dateRange = useMemo(() => getDateRange(period, selectedDate), [period, selectedDate])
   const { expenses, loading: expLoading } = useExpenses(dateRange)
   const { loans, loading: loanLoading } = useLoans()
   const { subscriptions, loading: subLoading } = useSubscriptions()
   const { vitamins, loading: vitLoading } = useVitamins()
+  const { budget } = useBudgetsStub()
 
   const loading = expLoading || loanLoading || subLoading || vitLoading
 
@@ -126,35 +92,37 @@ export default function Dashboard() {
     return groups
   }, [upcomingPayments])
 
+  // Budget widget helpers
+  const budgetSpent = periodTotal
+  const budgetTotal = budget ? budget.amount : 0
+  const budgetRatio = budgetTotal > 0 ? budgetSpent / budgetTotal : 0
+  const budgetPct = Math.round(budgetRatio * 100)
+  const budgetBarColor = budgetRatio > 1 ? 'bg-danger' : budgetRatio >= 0.8 ? 'bg-warning' : 'bg-positive'
+
   if (loading) {
-    return <div className="text-center text-gray-400 py-16 text-sm">Loading...</div>
+    return <div className="text-center text-text-muted py-16 text-sm">Loading...</div>
   }
 
   return (
     <div className="space-y-4">
-      {/* Expenditure overview with period toggle */}
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-500">{getPeriodLabel(period)} ({defaultCurrency})</p>
-          <div className="flex bg-gray-100 rounded-lg p-0.5">
-            {PERIODS.map(p => (
-              <button
-                key={p.key}
-                onClick={() => setPeriod(p.key)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                  period === p.key
-                    ? 'bg-white text-gray-800 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Period selector */}
+      <PeriodSelector
+        period={period}
+        onPeriodChange={setPeriod}
+        selectedDate={selectedDate}
+        onDateChange={setSelectedDate}
+      />
 
-        <p className="text-3xl font-bold text-gray-800">{formatAmount(periodTotal, defaultCurrency)}</p>
-        <p className="text-xs text-gray-400 mt-1">
+      {/* Expenditure overview */}
+      <div className="bg-card border border-border rounded-xl p-4">
+        <p className="text-sm text-text-secondary mb-2">
+          Spending ({defaultCurrency})
+        </p>
+
+        <p className="text-3xl font-mono text-highlight transition-opacity duration-150">
+          {formatAmount(periodTotal, defaultCurrency)}
+        </p>
+        <p className="text-xs text-text-muted mt-1">
           {dateRange.startDate === dateRange.endDate
             ? dateRange.startDate
             : `${dateRange.startDate} — ${dateRange.endDate}`}
@@ -167,12 +135,20 @@ export default function Dashboard() {
               .sort((a, b) => b[1] - a[1])
               .map(([cat, amt]) => (
                 <div key={cat} className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[cat] ?? 'bg-gray-300'}`} />
-                  <span className="text-xs text-gray-600 flex-1">{cat}</span>
-                  <span className="text-xs font-medium text-gray-800">{formatAmount(amt, defaultCurrency)}</span>
-                  <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${CATEGORY_COLORS[cat] ?? 'bg-gray-300'}`}
-                      style={{ width: `${periodTotal > 0 ? (amt / periodTotal) * 100 : 0}%` }} />
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: TEMP_CATEGORY_COLORS[cat] || '#9a8e80' }}
+                  />
+                  <span className="text-xs text-text-primary flex-1">{cat}</span>
+                  <span className="text-xs font-mono text-highlight">{formatAmount(amt, defaultCurrency)}</span>
+                  <div className="w-20 h-1.5 bg-base rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${periodTotal > 0 ? (amt / periodTotal) * 100 : 0}%`,
+                        backgroundColor: TEMP_CATEGORY_COLORS[cat] || '#9a8e80',
+                      }}
+                    />
                   </div>
                 </div>
               ))}
@@ -180,29 +156,52 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Budget summary */}
+      <div className="bg-card border border-border rounded-xl p-4">
+        <p className="text-sm text-text-secondary mb-2">Budget</p>
+        {budget === null ? (
+          <p className="text-text-muted text-sm">No budget set</p>
+        ) : (
+          <>
+            <p className="text-sm text-text-primary mb-2">
+              Budget: {formatAmount(budgetSpent, defaultCurrency)} / {formatAmount(budgetTotal, defaultCurrency)}
+            </p>
+            <div className="bg-base rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${budgetBarColor} progress-animate`}
+                style={{ width: `${Math.min(budgetPct, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-text-muted mt-1">{budgetPct}% used</p>
+          </>
+        )}
+      </div>
+
       {/* Total debt */}
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <p className="text-sm text-gray-500 mb-1">Total outstanding debt ({defaultCurrency})</p>
-        <p className="text-2xl font-bold text-red-500">{formatAmount(totalDebt, defaultCurrency)}</p>
-        <p className="text-xs text-gray-400 mt-1">{loans.length} active loan{loans.length !== 1 ? 's' : ''}</p>
+      <div className="bg-card border border-border rounded-xl p-4">
+        <p className="text-sm text-text-secondary mb-1">Total outstanding debt ({defaultCurrency})</p>
+        <p className="text-2xl font-mono text-danger transition-opacity duration-150">
+          {formatAmount(totalDebt, defaultCurrency)}
+        </p>
+        <p className="text-xs text-text-muted mt-1">{loans.length} active loan{loans.length !== 1 ? 's' : ''}</p>
       </div>
 
       {/* Bills to be paid — clickable, expands to show next 3 months */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <button
           onClick={() => setBillsOpen(!billsOpen)}
           className="w-full p-4 flex items-center justify-between text-left"
         >
           <div>
-            <p className="text-sm text-gray-500">Bills to be paid</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-sm text-text-secondary">Bills to be paid</p>
+            <p className="text-xs text-text-muted mt-0.5">
               {billCount === 0
                 ? 'No upcoming bills'
                 : `${billCount} payment${billCount !== 1 ? 's' : ''} in the next 3 months`}
             </p>
           </div>
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${billsOpen ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-text-muted transition-transform ${billsOpen ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -212,23 +211,27 @@ export default function Dashboard() {
         {billsOpen && (
           <div className="px-4 pb-4 space-y-4">
             {billCount === 0 ? (
-              <p className="text-sm text-green-600">All clear! No payments due in the next 3 months.</p>
+              <p className="text-sm text-positive">All clear! No payments due in the next 3 months.</p>
             ) : (
               Object.entries(paymentsByMonth).map(([monthLabel, payments]) => (
                 <div key={monthLabel}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{monthLabel}</p>
+                  <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">{monthLabel}</p>
                   <div className="space-y-2">
                     {payments.map((p, i) => {
                       const days = daysUntilDue(p.projected_date.toISOString().split('T')[0])
                       return (
                         <div key={`${p.id}-${i}`} className="flex justify-between items-center">
                           <div>
-                            <span className="text-sm font-medium text-gray-800">{p.name}</span>
-                            <span className="ml-2 text-xs text-gray-400">
+                            <span className="text-sm font-medium text-text-primary">{p.name}</span>
+                            <span className={`ml-2 text-xs ${
+                              days < 0 ? 'text-danger'
+                                : days <= 7 ? 'text-warning'
+                                : 'text-text-muted'
+                            }`}>
                               {days === 0 ? 'today' : days < 0 ? `${Math.abs(days)}d overdue` : formatProjectedDate(p.projected_date)}
                             </span>
                           </div>
-                          <span className="text-sm font-semibold text-gray-700">{formatAmount(p.amount, p.currency)}</span>
+                          <span className="text-sm font-mono text-highlight">{formatAmount(p.amount, p.currency)}</span>
                         </div>
                       )
                     })}
@@ -248,21 +251,21 @@ export default function Dashboard() {
           .sort((a, b) => a.daysLeft - b.daysLeft)
 
         return (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
             <button
               onClick={() => setRestockOpen(!restockOpen)}
               className="w-full p-4 flex items-center justify-between text-left"
             >
               <div>
-                <p className="text-sm text-gray-500">Vitamins to restock</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-sm text-text-secondary">Vitamins to restock</p>
+                <p className="text-xs text-text-muted mt-0.5">
                   {restockSoon.length === 0
                     ? 'All stocked up'
                     : `${restockSoon.length} vitamin${restockSoon.length !== 1 ? 's' : ''} running low`}
                 </p>
               </div>
               <svg
-                className={`w-4 h-4 text-gray-400 transition-transform ${restockOpen ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 text-text-muted transition-transform ${restockOpen ? 'rotate-180' : ''}`}
                 fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -272,24 +275,24 @@ export default function Dashboard() {
             {restockOpen && (
               <div className="px-4 pb-4">
                 {restockSoon.length === 0 ? (
-                  <p className="text-sm text-green-600">All stocked up! No vitamins need restocking soon.</p>
+                  <p className="text-sm text-positive">All stocked up! No vitamins need restocking soon.</p>
                 ) : (
                   <div className="space-y-2">
                     {restockSoon.map(v => (
                       <div key={v.id} className="flex justify-between items-center">
                         <div>
-                          <span className="text-sm font-medium text-gray-800">{v.name}</span>
-                          <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-medium ${
-                            v.daysLeft <= 0 ? 'bg-red-100 text-red-700'
-                              : v.daysLeft <= 7 ? 'bg-orange-100 text-orange-700'
-                              : 'bg-yellow-100 text-yellow-700'
+                          <span className="text-sm font-medium text-text-primary">{v.name}</span>
+                          <span className={`ml-2 text-xs ${
+                            v.daysLeft <= 0 ? 'text-danger'
+                              : v.daysLeft <= 7 ? 'text-warning'
+                              : 'text-positive'
                           }`}>
                             {v.daysLeft < 0 ? `${Math.abs(v.daysLeft)}d overdue`
                               : v.daysLeft === 0 ? 'today'
                               : `${v.daysLeft}d left`}
                           </span>
                         </div>
-                        <span className="text-sm font-semibold text-gray-700">{formatAmount(v.cost, v.currency)}</span>
+                        <span className="text-sm font-mono text-highlight">{formatAmount(v.cost, v.currency)}</span>
                       </div>
                     ))}
                   </div>
