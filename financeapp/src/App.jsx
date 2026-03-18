@@ -5,6 +5,7 @@ import BottomNav from './components/layout/BottomNav'
 import Toast from './components/shared/Toast'
 import Dashboard from './pages/Dashboard'
 import Expenses from './pages/Expenses'
+import Budget from './pages/Budget'
 import Loans from './pages/Loans'
 import Subscriptions from './pages/Subscriptions'
 import Vitamins from './pages/Vitamins'
@@ -19,14 +20,11 @@ export const SettingsContext = createContext({
 const PAGE_TITLES = {
   dashboard: 'Finance Planner',
   expenses: 'Daily Expenses',
+  budget: 'Monthly Budget',
   loans: 'Loan Tracker',
   subscriptions: 'Subscriptions',
   vitamins: 'Vitamins',
   settings: 'Settings',
-}
-
-function TabPanel({ active, children }) {
-  return <div style={{ display: active ? 'block' : 'none' }}>{children}</div>
 }
 
 export default function App() {
@@ -44,15 +42,16 @@ export default function App() {
 
   return (
     <SettingsContext.Provider value={{ defaultCurrency, setDefaultCurrency, showToast }}>
-      <div className="min-h-screen bg-gray-50 flex flex-col max-w-lg mx-auto">
+      <div className="min-h-screen flex flex-col max-w-lg mx-auto">
         <TopBar title={PAGE_TITLES[tab]} />
         <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
-          <TabPanel active={tab === 'dashboard'}><Dashboard /></TabPanel>
-          <TabPanel active={tab === 'expenses'}><Expenses /></TabPanel>
-          <TabPanel active={tab === 'loans'}><Loans /></TabPanel>
-          <TabPanel active={tab === 'subscriptions'}><Subscriptions /></TabPanel>
-          <TabPanel active={tab === 'vitamins'}><Vitamins /></TabPanel>
-          <TabPanel active={tab === 'settings'}><Settings /></TabPanel>
+          {tab === 'dashboard' && <Dashboard />}
+          {tab === 'expenses' && <Expenses />}
+          {tab === 'budget' && <Budget />}
+          {tab === 'loans' && <Loans />}
+          {tab === 'subscriptions' && <Subscriptions />}
+          {tab === 'vitamins' && <Vitamins />}
+          {tab === 'settings' && <Settings />}
         </main>
         <BottomNav active={tab} onChange={setTab} />
         <Toast message={toast} onDone={() => setToast('')} />

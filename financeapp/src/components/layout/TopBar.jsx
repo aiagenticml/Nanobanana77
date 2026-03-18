@@ -1,8 +1,8 @@
 export default function TopBar({ title }) {
   return (
-    <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center">
-      <span className="text-xl mr-2">💰</span>
-      <h1 className="text-lg font-bold text-gray-800">{title}</h1>
+    <div className="px-4 py-3 flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full bg-accent inline-block"></span>
+      <h1 className="text-lg font-medium text-text-primary">{title}</h1>
     </div>
   )
 }
