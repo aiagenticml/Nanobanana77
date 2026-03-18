@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'geist/font/mono';
+@import 'geist/font/mono'; /* must remain after @tailwind to avoid postcss-import resolution */
 
 :root {
   --bg-base: #171412;

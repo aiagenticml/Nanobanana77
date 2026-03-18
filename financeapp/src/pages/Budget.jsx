@@ -72,7 +72,7 @@ export default function Budget() {
     try {
       await createBudget(amount)
       setNewAllowance('')
-    } catch {}
+    } catch { /* error surfaced via hook state */ }
   }
 
   async function handleSaveAllowance() {
@@ -81,20 +81,20 @@ export default function Budget() {
     try {
       await updateAllowance(budget.id, amount)
       setEditingAllowance(false)
-    } catch {}
+    } catch { /* error surfaced via hook state */ }
   }
 
   async function handleAddItem(data) {
     try {
       await addItem(data)
       setShowForm(false)
-    } catch {}
+    } catch { /* error surfaced via hook state */ }
   }
 
   async function handleDeleteItem(itemId) {
     try {
       await deleteItem(itemId)
-    } catch {}
+    } catch { /* error surfaced via hook state */ }
   }
 
   function startEditItem(item) {
@@ -115,7 +115,7 @@ export default function Budget() {
       })
       setEditingItemId(null)
       setEditItemData({})
-    } catch {}
+    } catch { /* error surfaced via hook state */ }
   }
 
   if (loading) {

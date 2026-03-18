@@ -8,7 +8,8 @@ import { useBudgets } from '../hooks/useBudgets'
 import { useCategories } from '../hooks/useCategories'
 import { formatAmount } from '../lib/currencyUtils'
 import { getRemainingBalance } from '../lib/loanCalc'
-import PeriodSelector, { getDateRange } from '../components/shared/PeriodSelector'
+import PeriodSelector from '../components/shared/PeriodSelector'
+import { getDateRange } from '../lib/dateRange'
 
 function getUpcomingPayments(subscriptions, months = 3) {
   const today = new Date()
