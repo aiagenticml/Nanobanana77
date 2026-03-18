@@ -3,6 +3,7 @@ import { SettingsContext } from '../App'
 import { useExpenses } from '../hooks/useExpenses'
 import { useLoans } from '../hooks/useLoans'
 import { useSubscriptions, daysUntilDue } from '../hooks/useSubscriptions'
+import { useVitamins, daysUntilRestock } from '../hooks/useVitamins'
 import { formatAmount } from '../lib/currencyUtils'
 import { getRemainingBalance } from '../lib/loanCalc'
 
@@ -90,13 +91,15 @@ export default function Dashboard() {
   const { defaultCurrency } = useContext(SettingsContext)
   const [period, setPeriod] = useState('monthly')
   const [billsOpen, setBillsOpen] = useState(false)
+  const [restockOpen, setRestockOpen] = useState(false)
 
   const dateRange = useMemo(() => getDateRange(period), [period])
   const { expenses, loading: expLoading } = useExpenses(dateRange)
   const { loans, loading: loanLoading } = useLoans()
   const { subscriptions, loading: subLoading } = useSubscriptions()
+  const { vitamins, loading: vitLoading } = useVitamins()
 
-  const loading = expLoading || loanLoading || subLoading
+  const loading = expLoading || loanLoading || subLoading || vitLoading
 
   const totalDebt = loans
     .filter(l => (l.currency ?? defaultCurrency) === defaultCurrency)
@@ -236,6 +239,66 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Vitamins restock soon */}
+      {(() => {
+        const restockSoon = vitamins
+          .map(v => ({ ...v, daysLeft: daysUntilRestock(v.date_purchased, v.servings) }))
+          .filter(v => v.daysLeft <= 14)
+          .sort((a, b) => a.daysLeft - b.daysLeft)
+
+        return (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <button
+              onClick={() => setRestockOpen(!restockOpen)}
+              className="w-full p-4 flex items-center justify-between text-left"
+            >
+              <div>
+                <p className="text-sm text-gray-500">Vitamins to restock</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {restockSoon.length === 0
+                    ? 'All stocked up'
+                    : `${restockSoon.length} vitamin${restockSoon.length !== 1 ? 's' : ''} running low`}
+                </p>
+              </div>
+              <svg
+                className={`w-4 h-4 text-gray-400 transition-transform ${restockOpen ? 'rotate-180' : ''}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {restockOpen && (
+              <div className="px-4 pb-4">
+                {restockSoon.length === 0 ? (
+                  <p className="text-sm text-green-600">All stocked up! No vitamins need restocking soon.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {restockSoon.map(v => (
+                      <div key={v.id} className="flex justify-between items-center">
+                        <div>
+                          <span className="text-sm font-medium text-gray-800">{v.name}</span>
+                          <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-medium ${
+                            v.daysLeft <= 0 ? 'bg-red-100 text-red-700'
+                              : v.daysLeft <= 7 ? 'bg-orange-100 text-orange-700'
+                              : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {v.daysLeft < 0 ? `${Math.abs(v.daysLeft)}d overdue`
+                              : v.daysLeft === 0 ? 'today'
+                              : `${v.daysLeft}d left`}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">{formatAmount(v.cost, v.currency)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })()}
     </div>
   )
 }

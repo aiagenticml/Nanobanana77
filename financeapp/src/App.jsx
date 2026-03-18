@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Expenses from './pages/Expenses'
 import Loans from './pages/Loans'
 import Subscriptions from './pages/Subscriptions'
+import Vitamins from './pages/Vitamins'
 import Settings from './pages/Settings'
 
 export const SettingsContext = createContext({
@@ -20,6 +21,7 @@ const PAGE_TITLES = {
   expenses: 'Daily Expenses',
   loans: 'Loan Tracker',
   subscriptions: 'Subscriptions',
+  vitamins: 'Vitamins',
   settings: 'Settings',
 }
 
@@ -49,6 +51,7 @@ export default function App() {
           <TabPanel active={tab === 'expenses'}><Expenses /></TabPanel>
           <TabPanel active={tab === 'loans'}><Loans /></TabPanel>
           <TabPanel active={tab === 'subscriptions'}><Subscriptions /></TabPanel>
+          <TabPanel active={tab === 'vitamins'}><Vitamins /></TabPanel>
           <TabPanel active={tab === 'settings'}><Settings /></TabPanel>
         </main>
         <BottomNav active={tab} onChange={setTab} />

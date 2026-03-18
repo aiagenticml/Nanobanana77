@@ -3,6 +3,7 @@ const tabs = [
   { id: 'expenses', label: 'Spend', icon: '💸' },
   { id: 'loans', label: 'Loans', icon: '🏦' },
   { id: 'subscriptions', label: 'Subs', icon: '🔄' },
+  { id: 'vitamins', label: 'Vitamins', icon: '💊' },
   { id: 'settings', label: 'Settings', icon: '⚙️' },
 ]
 
