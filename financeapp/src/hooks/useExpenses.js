@@ -10,7 +10,9 @@ export function useExpenses(filters = {}) {
     setLoading(true)
     let query = supabase.from('expenses').select('*').order('date', { ascending: false })
 
-    if (filters.month) {
+    if (filters.startDate && filters.endDate) {
+      query = query.gte('date', filters.startDate).lte('date', filters.endDate)
+    } else if (filters.month) {
       const [year, month] = filters.month.split('-')
       const start = `${year}-${month}-01`
       const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
@@ -25,7 +27,7 @@ export function useExpenses(filters = {}) {
     if (error) setError(error.message)
     else setExpenses(data ?? [])
     setLoading(false)
-  }, [filters.month, filters.category])
+  }, [filters.month, filters.category, filters.startDate, filters.endDate])
 
   useEffect(() => { fetch() }, [fetch])
 
