@@ -28,18 +28,18 @@ export default function Vitamins() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-green-50 rounded-xl p-3 flex justify-between items-center">
-        <span className="text-sm text-green-700 font-medium">Total spent on vitamins ({defaultCurrency})</span>
-        <span className="font-bold text-green-800">{formatAmount(totalSpent, defaultCurrency)}</span>
+      <div className="bg-positive/10 border border-positive/20 rounded-xl p-3 flex justify-between items-center">
+        <span className="text-sm text-positive font-medium">Total spent on vitamins ({defaultCurrency})</span>
+        <span className="font-bold text-positive">{formatAmount(totalSpent, defaultCurrency)}</span>
       </div>
 
       <button onClick={() => setShowForm(true)}
-        className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium">
+        className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-medium">
         + Add Vitamin
       </button>
 
       {loading ? (
-        <div className="text-center text-gray-400 py-8 text-sm">Loading...</div>
+        <div className="text-center text-text-muted py-8 text-sm">Loading...</div>
       ) : (
         <VitaminList
           vitamins={vitamins}

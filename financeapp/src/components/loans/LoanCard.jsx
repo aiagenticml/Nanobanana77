@@ -25,51 +25,51 @@ export default function LoanCard({ loan, onDelete, onEdit }) {
   const currency = loan.currency ?? 'SGD'
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex justify-between items-start">
         <div className="cursor-pointer flex-1" onClick={() => onEdit?.(loan)}>
-          <h3 className="font-semibold text-gray-800">{loan.name}</h3>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
+          <h3 className="font-semibold text-text-primary">{loan.name}</h3>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-base border border-border text-text-secondary capitalize">
             {loan.loan_type === 'reducing' ? 'Reducing Balance' : 'Flat Rate'} · {loan.interest_rate}% p.a.
           </span>
         </div>
-        <button onClick={() => onDelete(loan.id)} className="text-gray-300 hover:text-red-400 text-2xl leading-none p-1">×</button>
+        <button onClick={() => onDelete(loan.id)} className="text-text-muted hover:text-danger text-2xl leading-none p-1">×</button>
       </div>
 
       {/* Progress bar */}
       <div>
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Remaining: <strong className="text-gray-800">{formatAmount(remaining, currency)}</strong></span>
+        <div className="flex justify-between text-xs text-text-secondary mb-1">
+          <span>Remaining: <strong className="text-text-primary">{formatAmount(remaining, currency)}</strong></span>
           <span>{pct.toFixed(0)}% paid</span>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+        <div className="h-2 bg-base rounded-full overflow-hidden">
+          <div className="h-full bg-accent rounded-full transition-all progress-animate" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-xs text-gray-400">Monthly</p>
-          <p className="text-sm font-semibold text-gray-800">{formatAmount(monthly, currency)}</p>
+        <div className="bg-base rounded-lg p-2">
+          <p className="text-xs text-text-muted">Monthly</p>
+          <p className="text-sm font-semibold text-text-primary">{formatAmount(monthly, currency)}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-xs text-gray-400">Total Interest</p>
-          <p className="text-sm font-semibold text-red-500">{formatAmount(totalInterest, currency)}</p>
+        <div className="bg-base rounded-lg p-2">
+          <p className="text-xs text-text-muted">Total Interest</p>
+          <p className="text-sm font-semibold text-danger">{formatAmount(totalInterest, currency)}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-xs text-gray-400">Payoff</p>
-          <p className="text-sm font-semibold text-gray-800">{getPayoffDate(loan)}</p>
+        <div className="bg-base rounded-lg p-2">
+          <p className="text-xs text-text-muted">Payoff</p>
+          <p className="text-sm font-semibold text-text-primary">{getPayoffDate(loan)}</p>
         </div>
       </div>
 
       <div className="flex gap-3">
         <button onClick={() => setShowTable(v => !v)}
-          className="text-xs text-blue-600 hover:underline">
+          className="text-xs text-accent hover:underline">
           {showTable ? 'Hide' : 'Show'} amortization schedule
         </button>
         {loan.statement_url && (
           <button onClick={() => setViewingStatement(true)}
-            className="text-xs text-blue-600 hover:underline">
+            className="text-xs text-accent hover:underline">
             View statement
           </button>
         )}

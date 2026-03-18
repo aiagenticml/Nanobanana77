@@ -34,18 +34,18 @@ export default function Subscriptions() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-blue-50 rounded-xl p-3 flex justify-between items-center">
-        <span className="text-sm text-blue-700 font-medium">Est. monthly cost ({defaultCurrency})</span>
-        <span className="font-bold text-blue-800">{formatAmount(monthlyTotal, defaultCurrency)}</span>
+      <div className="bg-accent/10 border border-accent/20 rounded-xl p-3 flex justify-between items-center">
+        <span className="text-sm text-accent font-medium">Est. monthly cost ({defaultCurrency})</span>
+        <span className="font-bold text-accent">{formatAmount(monthlyTotal, defaultCurrency)}</span>
       </div>
 
       <button onClick={() => setShowForm(true)}
-        className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium">
+        className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-medium">
         + Add Subscription
       </button>
 
       {loading ? (
-        <div className="text-center text-gray-400 py-8 text-sm">Loading...</div>
+        <div className="text-center text-text-muted py-8 text-sm">Loading...</div>
       ) : (
         <SubscriptionList
           subscriptions={subscriptions}

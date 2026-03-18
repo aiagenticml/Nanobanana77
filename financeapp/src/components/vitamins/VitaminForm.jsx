@@ -40,49 +40,49 @@ export default function VitaminForm({ onSubmit, onCancel, initial }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Vitamin Name</label>
+        <label className="block text-sm font-medium text-text-secondary mb-1">Vitamin Name</label>
         <input type="text" placeholder="e.g. Vitamin D3, Omega-3, Magnesium" value={form.name}
           onChange={e => set('name', e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
+          className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-border-focus focus:ring-1 focus:ring-border-focus" required />
       </div>
 
       <div className="flex gap-2">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Cost</label>
           <input type="number" step="0.01" min="0" placeholder="0.00" value={form.cost}
             onChange={e => set('cost', e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
+            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-border-focus focus:ring-1 focus:ring-border-focus" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Currency</label>
           <select value={form.currency} onChange={e => set('currency', e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            className="bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-border-focus focus:ring-1 focus:ring-border-focus">
             {Object.keys(CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-text-secondary mb-1">
           Number of Servings
-          <span className="font-normal text-gray-400"> — how many days will this last?</span>
+          <span className="font-normal text-text-muted"> — how many days will this last?</span>
         </label>
         <input type="number" min="1" placeholder="e.g. 60" value={form.servings}
           onChange={e => set('servings', e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
+          className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-border-focus focus:ring-1 focus:ring-border-focus" required />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Date Purchased</label>
+        <label className="block text-sm font-medium text-text-secondary mb-1">Date Purchased</label>
         <input type="date" value={form.date_purchased} onChange={e => set('date_purchased', e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required />
+          className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-border-focus focus:ring-1 focus:ring-border-focus" required />
       </div>
 
       <div className="flex gap-2 pt-2">
         <button type="button" onClick={onCancel}
-          className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>
+          className="flex-1 py-2 border border-border rounded-lg text-sm text-text-secondary">Cancel</button>
         <button type="submit" disabled={saving}
-          className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+          className="flex-1 py-2 bg-accent text-white rounded-lg text-sm font-medium disabled:opacity-50">
           {saving ? 'Saving...' : isEdit ? 'Save' : 'Add Vitamin'}
         </button>
       </div>

@@ -34,37 +34,37 @@ export default function Settings() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <h2 className="font-semibold text-gray-800 mb-4">Preferences</h2>
+      <div className="bg-card border border-border rounded-xl p-4">
+        <h2 className="font-semibold text-text-primary mb-4">Preferences</h2>
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Your Name</label>
             <input type="text" value={userName} onChange={e => setUserName(e.target.value)}
               placeholder="e.g. John"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-border-focus focus:ring-1 focus:ring-border-focus" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Default Currency</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Default Currency</label>
             <select value={localCurrency} onChange={e => setLocalCurrency(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-border-focus focus:ring-1 focus:ring-border-focus">
               {Object.entries(CURRENCIES).map(([code, sym]) => (
                 <option key={code} value={code}>{code} ({sym})</option>
               ))}
             </select>
           </div>
           <button type="submit" disabled={saving}
-            className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-50">
+            className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-medium disabled:opacity-50">
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
           </button>
         </form>
       </div>
 
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <h2 className="font-semibold text-gray-800 mb-2">Supabase Setup</h2>
-        <p className="text-xs text-gray-500 leading-relaxed">
+      <div className="bg-card border border-border rounded-xl p-4">
+        <h2 className="font-semibold text-text-primary mb-2">Supabase Setup</h2>
+        <p className="text-xs text-text-secondary leading-relaxed">
           This app uses Supabase for data storage. Create a <code>.env.local</code> file in the project root with:
         </p>
-        <pre className="bg-gray-50 rounded-lg p-3 text-xs text-gray-700 mt-2 overflow-x-auto">
+        <pre className="bg-base rounded-lg p-3 text-xs font-mono text-text-secondary mt-2 overflow-x-auto">
 {`VITE_SUPABASE_URL=your-url
 VITE_SUPABASE_ANON_KEY=your-anon-key`}
         </pre>
