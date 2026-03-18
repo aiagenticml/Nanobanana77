@@ -13,32 +13,90 @@ import EmptyState from '../components/shared/EmptyState'
 // --- Filter bar ---
 const filterClass = 'bg-surface-50 border border-border rounded-xl px-2.5 py-1.5 text-xs text-text focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all'
 
-const PRESETS = [
-  { label: 'All Time', value: 'all' },
-  { label: 'This Month', value: 'month' },
-  { label: 'Last Month', value: 'last_month' },
-  { label: 'This Week', value: 'week' },
+const DATE_MODES = [
+  { label: 'All', value: 'all' },
+  { label: 'Month', value: 'month' },
+  { label: 'Week', value: 'week' },
+  { label: 'Day', value: 'day' },
   { label: 'Custom', value: 'custom' },
 ]
 
-function getPresetDates(preset) {
+function getMonday(dateStr) {
+  const d = new Date(dateStr)
+  const day = d.getDay()
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
+  return d.toISOString().split('T')[0]
+}
+
+function getSunday(mondayStr) {
+  const d = new Date(mondayStr)
+  d.setDate(d.getDate() + 6)
+  return d.toISOString().split('T')[0]
+}
+
+function formatWeekLabel(mondayStr) {
+  const mon = new Date(mondayStr)
+  const sun = new Date(mondayStr)
+  sun.setDate(sun.getDate() + 6)
+  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return `${fmt(mon)} – ${fmt(sun)}`
+}
+
+function getWeekOptions(trades) {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  if (preset === 'all') return { from: null, to: null }
-  if (preset === 'week') {
-    const d = new Date(now)
-    const day = d.getDay()
-    d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
-    return { from: d.toISOString().split('T')[0], to: today }
+  const todayMonday = getMonday(now.toISOString().split('T')[0])
+  const weeks = []
+  let current = new Date(todayMonday)
+  // go back up to 52 weeks or to oldest trade
+  const oldest = trades.length > 0
+    ? getMonday([...trades].sort((a, b) => a.date.localeCompare(b.date))[0].date)
+    : todayMonday
+  const stop = new Date(oldest)
+  while (current >= stop) {
+    const mon = current.toISOString().split('T')[0]
+    weeks.push({ value: mon, label: formatWeekLabel(mon) })
+    current.setDate(current.getDate() - 7)
   }
-  if (preset === 'month') {
-    return { from: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`, to: today }
+  return weeks
+}
+
+function getMonthOptions(trades) {
+  const months = new Set()
+  const now = new Date()
+  // Always include last 12 months
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
   }
-  if (preset === 'last_month') {
-    const y = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
-    const m = now.getMonth() === 0 ? 12 : now.getMonth()
-    const last = new Date(y, m, 0).getDate()
-    return { from: `${y}-${String(m).padStart(2, '0')}-01`, to: `${y}-${String(m).padStart(2, '0')}-${last}` }
+  // Also include months from trade data
+  for (const t of trades) {
+    months.add(t.date.slice(0, 7))
+  }
+  return [...months].sort().reverse().map(m => {
+    const [y, mo] = m.split('-')
+    const label = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    return { value: m, label }
+  })
+}
+
+function getDateRangeFromMode(mode, selectedMonth, selectedWeek, selectedDay, customFrom, customTo) {
+  if (mode === 'all') return { from: null, to: null }
+  if (mode === 'month') {
+    if (!selectedMonth) return { from: null, to: null }
+    const [y, m] = selectedMonth.split('-')
+    const lastDay = new Date(Number(y), Number(m), 0).getDate()
+    return { from: `${selectedMonth}-01`, to: `${selectedMonth}-${String(lastDay).padStart(2, '0')}` }
+  }
+  if (mode === 'week') {
+    if (!selectedWeek) return { from: null, to: null }
+    return { from: selectedWeek, to: getSunday(selectedWeek) }
+  }
+  if (mode === 'day') {
+    if (!selectedDay) return { from: null, to: null }
+    return { from: selectedDay, to: selectedDay }
+  }
+  if (mode === 'custom') {
+    return { from: customFrom || null, to: customTo || null }
   }
   return { from: null, to: null }
 }
@@ -262,7 +320,13 @@ export default function Dashboard({ onNavigateTrade }) {
   const gam = useGamification()
 
   // Filters
-  const [preset, setPreset] = useState('all')
+  const [dateMode, setDateMode] = useState('all')
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  })
+  const [selectedWeek, setSelectedWeek] = useState(() => getMonday(new Date().toISOString().split('T')[0]))
+  const [selectedDay, setSelectedDay] = useState(() => new Date().toISOString().split('T')[0])
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
   const [filterAccount, setFilterAccount] = useState('')
@@ -280,16 +344,20 @@ export default function Dashboard({ onNavigateTrade }) {
   // Asset list
   const assets = useMemo(() => [...new Set(allTrades.map(t => t.symbol))].sort(), [allTrades])
 
+  // Week and month options (derived from all trades)
+  const weekOptions = useMemo(() => getWeekOptions(allTrades), [allTrades])
+  const monthOptions = useMemo(() => getMonthOptions(allTrades), [allTrades])
+
   // Filter trades
   const trades = useMemo(() => {
     let filtered = [...allTrades]
-    const dates = preset === 'custom' ? { from: customFrom || null, to: customTo || null } : getPresetDates(preset)
+    const dates = getDateRangeFromMode(dateMode, selectedMonth, selectedWeek, selectedDay, customFrom, customTo)
     if (dates.from) filtered = filtered.filter(t => t.date >= dates.from)
     if (dates.to) filtered = filtered.filter(t => t.date <= dates.to)
     if (filterAccount) filtered = filtered.filter(t => t.account === filterAccount)
     if (filterAsset) filtered = filtered.filter(t => t.symbol === filterAsset)
     return filtered
-  }, [allTrades, preset, customFrom, customTo, filterAccount, filterAsset])
+  }, [allTrades, dateMode, selectedMonth, selectedWeek, selectedDay, customFrom, customTo, filterAccount, filterAsset])
 
   // Computed stats
   const curve = useMemo(() => getEquityCurve(trades), [trades])
@@ -333,41 +401,83 @@ export default function Dashboard({ onNavigateTrade }) {
       {!gam.loading && <GamificationWidget gam={gam} />}
 
       {/* Filters */}
-      <div className="glass-card p-3 space-y-2">
-        <div className="flex gap-1.5 flex-wrap">
-          {PRESETS.map(p => (
-            <button key={p.value} onClick={() => setPreset(p.value)}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all ${
-                preset === p.value
-                  ? 'bg-accent/10 text-accent border border-accent/30'
-                  : 'text-text-muted border border-transparent hover:text-text-secondary'
+      <div className="glass-card p-3 space-y-2.5">
+        {/* Date mode tabs */}
+        <div className="flex gap-1">
+          {DATE_MODES.map(m => (
+            <button key={m.value} onClick={() => setDateMode(m.value)}
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                dateMode === m.value
+                  ? 'bg-accent/15 text-accent border border-accent/30'
+                  : 'text-text-muted border border-transparent hover:text-text-secondary hover:bg-surface-50'
               }`}>
-              {p.label}
+              {m.label}
             </button>
           ))}
         </div>
-        {preset === 'custom' && (
-          <div className="flex gap-2">
-            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-              className={filterClass + ' flex-1'} placeholder="From" />
-            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-              className={filterClass + ' flex-1'} placeholder="To" />
+
+        {/* Month picker */}
+        {dateMode === 'month' && (
+          <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
+            className={filterClass + ' w-full'}>
+            {monthOptions.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+          </select>
+        )}
+
+        {/* Week picker */}
+        {dateMode === 'week' && (
+          <select value={selectedWeek} onChange={e => setSelectedWeek(e.target.value)}
+            className={filterClass + ' w-full'}>
+            {weekOptions.length > 0
+              ? weekOptions.map(w => <option key={w.value} value={w.value}>{w.label}</option>)
+              : <option value={selectedWeek}>{formatWeekLabel(selectedWeek)}</option>}
+          </select>
+        )}
+
+        {/* Day picker */}
+        {dateMode === 'day' && (
+          <div className="flex items-center gap-2">
+            <button onClick={() => {
+              const d = new Date(selectedDay); d.setDate(d.getDate() - 1)
+              setSelectedDay(d.toISOString().split('T')[0])
+            }} className="w-8 h-8 flex items-center justify-center rounded-xl text-text-muted hover:text-text hover:bg-surface-50 transition-colors flex-shrink-0">&#8249;</button>
+            <input type="date" value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
+              className={filterClass + ' flex-1 text-center'} />
+            <button onClick={() => {
+              const d = new Date(selectedDay); d.setDate(d.getDate() + 1)
+              setSelectedDay(d.toISOString().split('T')[0])
+            }} className="w-8 h-8 flex items-center justify-center rounded-xl text-text-muted hover:text-text hover:bg-surface-50 transition-colors flex-shrink-0">&#8250;</button>
           </div>
         )}
-        <div className="flex gap-2">
-          {accounts.length > 0 && (
-            <select value={filterAccount} onChange={e => setFilterAccount(e.target.value)} className={filterClass + ' flex-1'}>
-              <option value="">All accounts</option>
-              {accounts.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-          )}
-          {assets.length > 0 && (
-            <select value={filterAsset} onChange={e => setFilterAsset(e.target.value)} className={filterClass + ' flex-1'}>
-              <option value="">All assets</option>
-              {assets.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-          )}
-        </div>
+
+        {/* Custom range */}
+        {dateMode === 'custom' && (
+          <div className="flex gap-2">
+            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+              className={filterClass + ' flex-1'} />
+            <span className="text-text-muted self-center text-xs">→</span>
+            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+              className={filterClass + ' flex-1'} />
+          </div>
+        )}
+
+        {/* Account & Asset filters */}
+        {(accounts.length > 0 || assets.length > 0) && (
+          <div className="flex gap-2">
+            {accounts.length > 0 && (
+              <select value={filterAccount} onChange={e => setFilterAccount(e.target.value)} className={filterClass + ' flex-1'}>
+                <option value="">All accounts</option>
+                {accounts.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+            )}
+            {assets.length > 0 && (
+              <select value={filterAsset} onChange={e => setFilterAsset(e.target.value)} className={filterClass + ' flex-1'}>
+                <option value="">All assets</option>
+                {assets.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+            )}
+          </div>
+        )}
       </div>
 
       {trades.length === 0 ? (
