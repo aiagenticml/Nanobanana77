@@ -23,8 +23,8 @@ export default {
         },
         text: {
           DEFAULT: '#e8e6e3',
-          secondary: '#a0a3ad',
-          muted: '#7a7d88',
+          secondary: '#c0c3cd',
+          muted: '#9da1ad',
         },
         accent: {
           DEFAULT: '#d4a574',
