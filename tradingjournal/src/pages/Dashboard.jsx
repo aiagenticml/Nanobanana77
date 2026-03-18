@@ -7,12 +7,12 @@ import {
 import ErrorBanner from '../components/shared/ErrorBanner'
 import EmptyState from '../components/shared/EmptyState'
 
-function StatCard({ label, value, sub, valueClass = 'text-gray-800' }) {
+function StatCard({ label, value, sub, valueClass = 'text-text' }) {
   return (
-    <div className="bg-white rounded-xl p-3 shadow-sm text-center">
-      <p className="text-xs text-gray-400 mb-1">{label}</p>
+    <div className="bg-card rounded-xl p-3 text-center border border-border">
+      <p className="text-xs text-text-muted mb-1">{label}</p>
       <p className={`text-lg font-bold ${valueClass}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-text-muted mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -20,9 +20,9 @@ function StatCard({ label, value, sub, valueClass = 'text-gray-800' }) {
 function EquityCurve({ curve }) {
   if (curve.length < 2) {
     return (
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <p className="text-xs font-medium text-gray-500 mb-2">Equity Curve</p>
-        <div className="h-24 flex items-center justify-center text-xs text-gray-300">
+      <div className="bg-card rounded-xl p-4 border border-border">
+        <p className="text-xs font-medium text-text-secondary mb-2">Equity Curve</p>
+        <div className="h-24 flex items-center justify-center text-xs text-text-muted">
           Not enough data
         </div>
       </div>
@@ -44,26 +44,24 @@ function EquityCurve({ curve }) {
   }).join(' ')
 
   const lastVal = curve[curve.length - 1].value
-  const lineColor = lastVal >= 0 ? '#16a34a' : '#dc2626'
+  const lineColor = lastVal >= 0 ? '#7da47a' : '#c47a7a'
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm">
+    <div className="bg-card rounded-xl p-4 border border-border">
       <div className="flex justify-between items-center mb-2">
-        <p className="text-xs font-medium text-gray-500">Equity Curve</p>
-        <span className={`text-xs font-semibold ${lastVal >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+        <p className="text-xs font-medium text-text-secondary">Equity Curve</p>
+        <span className={`text-xs font-semibold ${lastVal >= 0 ? 'text-profit' : 'text-loss'}`}>
           {lastVal >= 0 ? '+' : ''}{lastVal.toFixed(2)}
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-20" preserveAspectRatio="none">
-        {/* Zero line */}
         {min < 0 && max > 0 && (
           <line
             x1={pad} y1={H - pad - ((0 - min) / range) * (H - pad * 2)}
             x2={W - pad} y2={H - pad - ((0 - min) / range) * (H - pad * 2)}
-            stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4,4" />
+            stroke="#333333" strokeWidth="1" strokeDasharray="4,4" />
         )}
         <polyline points={points} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round" />
-        {/* Dots at each point */}
         {curve.map((p, i) => {
           const x = pad + (i / (curve.length - 1)) * (W - pad * 2)
           const y = H - pad - ((p.value - min) / range) * (H - pad * 2)
@@ -98,7 +96,7 @@ export default function Dashboard() {
     return val.toFixed(decimals)
   }
 
-  if (loading) return <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+  if (loading) return <p className="text-sm text-text-muted text-center py-8">Loading...</p>
 
   return (
     <div className="space-y-4">
@@ -108,13 +106,12 @@ export default function Dashboard() {
         <EmptyState icon="📊" message="No trades yet" sub="Log your first trade in the Trades tab" />
       ) : (
         <>
-          {/* Key stats */}
           <div className="grid grid-cols-2 gap-2">
             <StatCard
               label="Total P&L"
               value={`${totalPnL >= 0 ? '+' : ''}${fmt(totalPnL)} ${defaultCurrency}`}
               sub={`${closedTrades.length} closed trades`}
-              valueClass={totalPnL >= 0 ? 'text-green-600' : 'text-red-500'}
+              valueClass={totalPnL >= 0 ? 'text-profit' : 'text-loss'}
             />
             <StatCard
               label="Win Rate"
@@ -133,59 +130,55 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Equity curve */}
           <EquityCurve curve={curve} />
 
-          {/* Drawdown & streak */}
           <div className="grid grid-cols-2 gap-2">
             <StatCard
               label="Max Drawdown"
               value={maxDd > 0 ? `-${fmt(maxDd)} ${defaultCurrency}` : '—'}
-              valueClass="text-red-500"
+              valueClass="text-loss"
             />
             <StatCard
               label="Current Streak"
               value={streak.count > 0 ? `${streak.count} ${streak.type}${streak.count > 1 ? 's' : ''}` : '—'}
-              valueClass={streak.type === 'win' ? 'text-green-600' : streak.type === 'loss' ? 'text-red-500' : 'text-gray-800'}
+              valueClass={streak.type === 'win' ? 'text-profit' : streak.type === 'loss' ? 'text-loss' : 'text-text'}
             />
           </div>
 
-          {/* Best / worst */}
           {bestTrade && (
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-white rounded-xl p-3 shadow-sm">
-                <p className="text-xs text-gray-400 mb-1">Best Trade</p>
-                <p className="font-semibold text-gray-800">{bestTrade.symbol}</p>
-                <p className="text-sm font-bold text-green-600">+{fmt(resolvePnL(bestTrade))} {bestTrade.currency}</p>
-                <p className="text-xs text-gray-400">{bestTrade.date}</p>
+              <div className="bg-card rounded-xl p-3 border border-border">
+                <p className="text-xs text-text-muted mb-1">Best Trade</p>
+                <p className="font-semibold text-text">{bestTrade.symbol}</p>
+                <p className="text-sm font-bold text-profit">+{fmt(resolvePnL(bestTrade))} {bestTrade.currency}</p>
+                <p className="text-xs text-text-muted">{bestTrade.date}</p>
               </div>
               {worstTrade && worstTrade.id !== bestTrade.id && (
-                <div className="bg-white rounded-xl p-3 shadow-sm">
-                  <p className="text-xs text-gray-400 mb-1">Worst Trade</p>
-                  <p className="font-semibold text-gray-800">{worstTrade.symbol}</p>
-                  <p className="text-sm font-bold text-red-500">{fmt(resolvePnL(worstTrade))} {worstTrade.currency}</p>
-                  <p className="text-xs text-gray-400">{worstTrade.date}</p>
+                <div className="bg-card rounded-xl p-3 border border-border">
+                  <p className="text-xs text-text-muted mb-1">Worst Trade</p>
+                  <p className="font-semibold text-text">{worstTrade.symbol}</p>
+                  <p className="text-sm font-bold text-loss">{fmt(resolvePnL(worstTrade))} {worstTrade.currency}</p>
+                  <p className="text-xs text-text-muted">{worstTrade.date}</p>
                 </div>
               )}
             </div>
           )}
 
-          {/* Recent trades */}
           {recentTrades.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <p className="text-xs font-medium text-gray-500 px-4 pt-3 pb-2">Recent Trades</p>
-              <div className="divide-y divide-gray-50">
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <p className="text-xs font-medium text-text-secondary px-4 pt-3 pb-2">Recent Trades</p>
+              <div className="divide-y divide-border">
                 {recentTrades.map(t => {
                   const pnl = resolvePnL(t)
                   const isOpen = t.exit_price == null
                   return (
                     <div key={t.id} className="flex items-center justify-between px-4 py-2">
                       <div>
-                        <span className="text-sm font-medium text-gray-800">{t.symbol}</span>
-                        <span className={`ml-2 text-xs ${t.direction === 'long' ? 'text-green-600' : 'text-red-500'}`}>{t.direction}</span>
-                        <p className="text-xs text-gray-400">{t.date}</p>
+                        <span className="text-sm font-medium text-text">{t.symbol}</span>
+                        <span className={`ml-2 text-xs ${t.direction === 'long' ? 'text-profit' : 'text-loss'}`}>{t.direction}</span>
+                        <p className="text-xs text-text-muted">{t.date}</p>
                       </div>
-                      <span className={`text-sm font-semibold ${isOpen ? 'text-gray-400' : pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      <span className={`text-sm font-semibold ${isOpen ? 'text-text-muted' : pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
                         {isOpen ? 'Open' : `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`}
                       </span>
                     </div>

@@ -9,7 +9,7 @@ export default function TradeList({ trades, onDelete, onUpdate }) {
   const [deleting, setDeleting] = useState(null)
 
   if (trades.length === 0) {
-    return <EmptyState icon="📋" message="No trades yet" sub="Tap + Add Trade to log your first trade" />
+    return <EmptyState icon="📋" message="No trades yet" sub="Tap + to log your first trade" />
   }
 
   async function handleSave(id, data) {
@@ -46,14 +46,14 @@ export default function TradeList({ trades, onDelete, onUpdate }) {
       )}
 
       {deleting && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
-            <p className="text-gray-800 font-medium mb-4">Delete this trade?</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card rounded-2xl p-6 max-w-xs w-full text-center border border-border">
+            <p className="text-text font-medium mb-4">Delete this trade?</p>
             <div className="flex gap-2">
               <button onClick={() => setDeleting(null)}
-                className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">Cancel</button>
+                className="flex-1 py-2 border border-border rounded-lg text-sm text-text-secondary">Cancel</button>
               <button onClick={confirmDelete}
-                className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Delete</button>
+                className="flex-1 py-2 bg-loss text-surface rounded-lg text-sm font-medium">Delete</button>
             </div>
           </div>
         </div>

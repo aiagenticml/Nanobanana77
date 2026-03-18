@@ -33,26 +33,26 @@ export default function ImageUpload({ label = 'Attach image', value, onChange, f
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
       {preview ? (
         <div className="relative inline-block">
-          <img src={preview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-gray-200" />
+          <img src={preview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-border" />
           {uploading && (
-            <div className="absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center">
-              <span className="text-xs text-gray-500">Uploading...</span>
+            <div className="absolute inset-0 bg-card/70 rounded-lg flex items-center justify-center">
+              <span className="text-xs text-text-secondary">Uploading...</span>
             </div>
           )}
           {!uploading && (
             <button type="button" onClick={handleRemove}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow">
-              ×
+              className="absolute -top-2 -right-2 bg-loss text-surface rounded-full w-5 h-5 text-xs flex items-center justify-center shadow">
+              x
             </button>
           )}
         </div>
       ) : (
         <button type="button" onClick={() => inputRef.current?.click()}
-          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors">
-          {uploading ? 'Uploading...' : '📷 Tap to upload'}
+          className="w-full py-3 border-2 border-dashed border-border-light rounded-lg text-sm text-text-muted hover:border-accent-muted hover:text-accent transition-colors">
+          {uploading ? 'Uploading...' : 'Tap to upload'}
         </button>
       )}
       <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />

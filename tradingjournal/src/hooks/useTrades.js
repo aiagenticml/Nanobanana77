@@ -20,12 +20,13 @@ export function useTrades(filters = {}) {
     if (filters.instrument) query = query.eq('instrument', filters.instrument)
     if (filters.direction) query = query.eq('direction', filters.direction)
     if (filters.setup_tag) query = query.eq('setup_tag', filters.setup_tag)
+    if (filters.account) query = query.eq('account', filters.account)
 
     const { data, error } = await query
     if (error) setError(error.message)
     else setTrades(data ?? [])
     setLoading(false)
-  }, [filters.month, filters.instrument, filters.direction, filters.setup_tag])
+  }, [filters.month, filters.instrument, filters.direction, filters.setup_tag, filters.account])
 
   useEffect(() => { fetch() }, [fetch])
 

@@ -16,6 +16,7 @@ import { createClient } from '@supabase/supabase-js'
 //   setup_tag text,
 //   notes text,
 //   screenshot_url text,
+//   account text,
 //   created_at timestamptz default now()
 // );
 //

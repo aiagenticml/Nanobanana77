@@ -33,7 +33,7 @@ export default function App() {
 
   return (
     <SettingsContext.Provider value={{ defaultCurrency, setDefaultCurrency, showToast }}>
-      <div className="min-h-screen bg-gray-50 flex flex-col max-w-lg mx-auto">
+      <div className="min-h-screen bg-surface flex flex-col max-w-4xl mx-auto">
         <TopBar title={PAGE_TITLES[tab]} />
         <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
           <TabPanel active={tab === 'dashboard'}><Dashboard /></TabPanel>
