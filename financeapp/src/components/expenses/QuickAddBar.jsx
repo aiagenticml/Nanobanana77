@@ -1,47 +1,24 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useMemo } from 'react'
 import { SettingsContext } from '../../App'
-import { CATEGORIES } from './ExpenseForm'
 
-// Common keywords that auto-map to categories
-const KEYWORD_MAP = {
-  // Food
-  lunch: 'Food', dinner: 'Food', breakfast: 'Food', hawker: 'Food', makan: 'Food',
-  coffee: 'Food', tea: 'Food', snack: 'Food', supper: 'Food', brunch: 'Food',
-  grab: 'Food', foodpanda: 'Food', deliveroo: 'Food', mcdonalds: 'Food', kfc: 'Food',
-  bubble: 'Food', boba: 'Food', rice: 'Food', noodle: 'Food', noodles: 'Food',
-  // Transport
-  mrt: 'Transport', bus: 'Transport', taxi: 'Transport', fuel: 'Transport',
-  petrol: 'Transport', parking: 'Transport', ezlink: 'Transport', uber: 'Transport',
-  toll: 'Transport', train: 'Transport',
-  // Shopping
-  clothes: 'Shopping', shoes: 'Shopping', shirt: 'Shopping', pants: 'Shopping',
-  online: 'Shopping', shopee: 'Shopping', lazada: 'Shopping', amazon: 'Shopping',
-  // Entertainment
-  movie: 'Entertainment', movies: 'Entertainment', netflix: 'Entertainment',
-  concert: 'Entertainment', game: 'Entertainment', games: 'Entertainment',
-  karaoke: 'Entertainment', spotify: 'Entertainment',
-  // Health
-  doctor: 'Health', clinic: 'Health', medicine: 'Health', pharmacy: 'Health',
-  dental: 'Health', dentist: 'Health', gym: 'Health', vitamin: 'Health',
-  // Education
-  book: 'Education', books: 'Education', course: 'Education', tuition: 'Education',
-  udemy: 'Education', class: 'Education',
-  // Utilities
-  electric: 'Utilities', water: 'Utilities', internet: 'Utilities', phone: 'Utilities',
-  wifi: 'Utilities', bill: 'Utilities', mobile: 'Utilities',
-  // Groceries
-  grocery: 'Groceries', groceries: 'Groceries', supermarket: 'Groceries',
-  fairprice: 'Groceries', coldstore: 'Groceries', sheng: 'Groceries',
-  // Travel
-  hotel: 'Travel', flight: 'Travel', airbnb: 'Travel', luggage: 'Travel',
-  visa: 'Travel', airport: 'Travel',
-}
-
-export default function QuickAddBar({ onAdd }) {
+export default function QuickAddBar({ onAdd, keywordMap, categoryNames }) {
   const { defaultCurrency } = useContext(SettingsContext)
   const [input, setInput] = useState('')
   const [error, setError] = useState('')
   const [showGuide, setShowGuide] = useState(false)
+
+  // Build reverse map: category -> keywords[]
+  const keywordsByCategory = useMemo(() => {
+    const map = {}
+    if (!keywordMap) return map
+    for (const [kw, cat] of Object.entries(keywordMap)) {
+      if (!map[cat]) map[cat] = []
+      map[cat].push(kw)
+    }
+    return map
+  }, [keywordMap])
+
+  const catNames = categoryNames || []
 
   function parse(raw) {
     const tokens = raw.trim().split(/\s+/)
@@ -67,7 +44,7 @@ export default function QuickAddBar({ onAdd }) {
     let category = null
     let categoryIdx = -1
     for (let i = 0; i < rest.length; i++) {
-      const matched = CATEGORIES.find(c => c.toLowerCase() === rest[i].toLowerCase())
+      const matched = catNames.find(c => c.toLowerCase() === rest[i].toLowerCase())
       if (matched) {
         category = matched
         categoryIdx = i
@@ -76,11 +53,11 @@ export default function QuickAddBar({ onAdd }) {
     }
 
     // 2) If no exact match, try keyword matching
-    if (!category) {
+    if (!category && keywordMap) {
       for (let i = 0; i < rest.length; i++) {
         const kw = rest[i].toLowerCase()
-        if (KEYWORD_MAP[kw]) {
-          category = KEYWORD_MAP[kw]
+        if (keywordMap[kw]) {
+          category = keywordMap[kw]
           break // don't remove keyword from notes — it's useful context
         }
       }
@@ -125,33 +102,31 @@ export default function QuickAddBar({ onAdd }) {
             value={input}
             onChange={e => { setInput(e.target.value); setError('') }}
             placeholder='Quick add: "12.50 lunch" or "5 mrt"'
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="w-full bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
           />
-          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+          {error && <p className="text-xs text-danger mt-1">{error}</p>}
         </div>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
+        <button type="submit" className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
           + Add
         </button>
       </form>
       <button type="button" onClick={() => setShowGuide(v => !v)}
-        className="text-xs text-blue-500 hover:underline">
+        className="text-xs text-accent hover:underline">
         {showGuide ? 'Hide' : 'Show'} keyword guide
       </button>
       {showGuide && (
-        <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 space-y-1.5">
-          <p className="font-medium text-gray-700">Type an amount + a keyword and it auto-picks the category:</p>
+        <div className="bg-base rounded-lg p-3 text-xs text-text-secondary space-y-1.5">
+          <p className="font-medium text-text-primary">Type an amount + a keyword and it auto-picks the category:</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <div><span className="font-medium text-orange-600">Food:</span> lunch, dinner, breakfast, coffee, hawker, grab, makan</div>
-            <div><span className="font-medium text-blue-600">Transport:</span> mrt, bus, taxi, fuel, petrol, parking, ezlink</div>
-            <div><span className="font-medium text-pink-600">Shopping:</span> clothes, shoes, shopee, lazada, amazon</div>
-            <div><span className="font-medium text-purple-600">Entertainment:</span> movie, netflix, concert, game, karaoke</div>
-            <div><span className="font-medium text-green-600">Health:</span> doctor, clinic, medicine, pharmacy, gym, dental</div>
-            <div><span className="font-medium text-yellow-600">Education:</span> book, course, tuition, udemy</div>
-            <div><span className="font-medium text-gray-600">Utilities:</span> electric, water, internet, phone, bill</div>
-            <div><span className="font-medium text-lime-600">Groceries:</span> grocery, supermarket, fairprice, coldstore</div>
-            <div><span className="font-medium text-cyan-600">Travel:</span> hotel, flight, airbnb, airport</div>
+            {Object.entries(keywordsByCategory).map(([cat, keywords]) => (
+              <div key={cat}>
+                <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{cat}:</span>{' '}
+                {keywords.slice(0, 7).join(', ')}
+                {keywords.length > 7 ? '...' : ''}
+              </div>
+            ))}
           </div>
-          <p className="text-gray-400">e.g. "12.50 lunch at hawker" → Food · "3.20 mrt" → Transport</p>
+          <p className="text-text-muted">e.g. "12.50 lunch at hawker" → Food · "3.20 mrt" → Transport</p>
         </div>
       )}
     </div>
