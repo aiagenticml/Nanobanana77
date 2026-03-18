@@ -15,15 +15,18 @@ function NavIcon({ path }) {
 
 export default function BottomNav({ active, onChange }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border flex z-40 max-w-4xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface/80 backdrop-blur-xl border-t border-border flex z-40 max-w-4xl mx-auto">
       {tabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`flex-1 flex flex-col items-center py-2.5 text-[10px] transition-colors ${
+          className={`flex-1 flex flex-col items-center py-2.5 text-[10px] font-medium transition-all duration-200 relative ${
             active === tab.id ? 'text-accent' : 'text-text-muted hover:text-text-secondary'
           }`}
         >
+          {active === tab.id && (
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-accent" />
+          )}
           <NavIcon path={tab.icon} />
           <span className="mt-1">{tab.label}</span>
         </button>

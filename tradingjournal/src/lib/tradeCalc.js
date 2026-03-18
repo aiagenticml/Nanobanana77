@@ -48,6 +48,20 @@ export function getAvgRR(trades) {
   return avgWin / avgLoss
 }
 
+/** Average win value. */
+export function getAvgWin(trades) {
+  const wins = trades.filter(t => resolvePnL(t) > 0)
+  if (wins.length === 0) return null
+  return wins.reduce((s, t) => s + resolvePnL(t), 0) / wins.length
+}
+
+/** Average loss value (returned as negative). */
+export function getAvgLoss(trades) {
+  const losses = trades.filter(t => resolvePnL(t) < 0)
+  if (losses.length === 0) return null
+  return losses.reduce((s, t) => s + resolvePnL(t), 0) / losses.length
+}
+
 /**
  * Running equity curve sorted by date ascending.
  * Returns [{date, value}] where value is cumulative P&L.
@@ -94,4 +108,83 @@ export function getStreaks(trades) {
 /** Total P&L across all trades. */
 export function getTotalPnL(trades) {
   return trades.reduce((sum, t) => sum + resolvePnL(t), 0)
+}
+
+/** Group trades by asset symbol with stats. */
+export function getTradesByAsset(trades) {
+  const map = {}
+  for (const t of trades) {
+    if (!map[t.symbol]) map[t.symbol] = []
+    map[t.symbol].push(t)
+  }
+  return Object.entries(map).map(([symbol, group]) => {
+    const closed = group.filter(g => g.exit_price != null)
+    const wins = closed.filter(g => resolvePnL(g) > 0).length
+    const total = getTotalPnL(group)
+    return {
+      symbol,
+      count: group.length,
+      closed: closed.length,
+      wins,
+      winRate: closed.length > 0 ? wins / closed.length : null,
+      totalPnL: total,
+    }
+  }).sort((a, b) => b.count - a.count)
+}
+
+/** Time-of-day stats. Groups by entry_time hour and calculates winrate per hour. */
+export function getTimeOfDayStats(trades) {
+  const hourMap = {}
+  for (const t of trades) {
+    if (!t.entry_time || t.exit_price == null) continue
+    const hour = parseInt(t.entry_time.split(':')[0], 10)
+    if (isNaN(hour)) continue
+    if (!hourMap[hour]) hourMap[hour] = { total: 0, wins: 0 }
+    hourMap[hour].total++
+    if (resolvePnL(t) > 0) hourMap[hour].wins++
+  }
+  return Object.entries(hourMap).map(([hour, stats]) => ({
+    hour: parseInt(hour),
+    label: `${String(hour).padStart(2, '0')}:00`,
+    total: stats.total,
+    wins: stats.wins,
+    winRate: stats.total > 0 ? stats.wins / stats.total : 0,
+  })).sort((a, b) => a.hour - b.hour)
+}
+
+/** Trade duration stats. Groups by duration bucket and calculates winrate. */
+export function getTradeDurationStats(trades) {
+  const buckets = {
+    '<1h': { min: 0, max: 60, total: 0, wins: 0 },
+    '1-4h': { min: 60, max: 240, total: 0, wins: 0 },
+    '4-8h': { min: 240, max: 480, total: 0, wins: 0 },
+    '1d': { min: 480, max: 1440, total: 0, wins: 0 },
+    '2-3d': { min: 1440, max: 4320, total: 0, wins: 0 },
+    '4d+': { min: 4320, max: Infinity, total: 0, wins: 0 },
+  }
+
+  for (const t of trades) {
+    if (!t.entry_time || !t.exit_time || !t.exit_date || t.exit_price == null) continue
+    const entryDate = new Date(`${t.date}T${t.entry_time}`)
+    const exitDate = new Date(`${t.exit_date || t.date}T${t.exit_time}`)
+    const mins = (exitDate - entryDate) / 60000
+    if (isNaN(mins) || mins < 0) continue
+
+    for (const [, bucket] of Object.entries(buckets)) {
+      if (mins >= bucket.min && mins < bucket.max) {
+        bucket.total++
+        if (resolvePnL(t) > 0) bucket.wins++
+        break
+      }
+    }
+  }
+
+  return Object.entries(buckets)
+    .filter(([, b]) => b.total > 0)
+    .map(([label, b]) => ({
+      label,
+      total: b.total,
+      wins: b.wins,
+      winRate: b.total > 0 ? b.wins / b.total : 0,
+    }))
 }

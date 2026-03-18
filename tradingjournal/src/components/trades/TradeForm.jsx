@@ -5,13 +5,6 @@ import { calcPnL } from '../../lib/tradeCalc'
 
 const CURRENCIES = ['USD', 'SGD', 'EUR', 'GBP', 'JPY']
 
-export const SETUP_TAGS = [
-  'breakout', 'reversal', 'trend-follow', 'pullback', 'range', 'news', 'scalp', 'swing', 'other'
-]
-
-const inputClass = 'w-full bg-surface-50 border border-border rounded-lg px-3 py-2 text-sm text-text placeholder-text-muted focus:border-accent focus:outline-none'
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
-
 export default function TradeForm({ trade, onSubmit, onCancel }) {
   const { defaultCurrency } = useContext(SettingsContext)
   const today = new Date().toISOString().split('T')[0]
@@ -27,7 +20,8 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
     size: trade ? String(trade.size) : '',
     pnl: trade?.pnl != null ? String(trade.pnl) : '',
     currency: trade?.currency ?? defaultCurrency ?? 'USD',
-    setup_tag: trade?.setup_tag ?? '',
+    entry_time: trade?.entry_time ?? '',
+    exit_time: trade?.exit_time ?? '',
     notes: trade?.notes ?? '',
     screenshot_url: trade?.screenshot_url ?? null,
     account: trade?.account ?? '',
@@ -66,7 +60,8 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
         size: parseFloat(form.size),
         pnl: form.pnl !== '' ? parseFloat(form.pnl) : null,
         currency: form.currency,
-        setup_tag: form.setup_tag || null,
+        entry_time: form.entry_time || null,
+        exit_time: form.exit_time || null,
         notes: form.notes || null,
         screenshot_url: form.screenshot_url,
         account: form.account || null,
@@ -77,24 +72,34 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
     }
   }
 
+  const labelClass = 'block text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5'
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className={labelClass}>Date</label>
-        <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
-          className={inputClass} required />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className={labelClass}>Date</label>
+          <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
+            className="input-field font-mono" required />
+        </div>
+        <div className="flex-1">
+          <label className={labelClass}>Account</label>
+          <input type="text" placeholder="e.g. 12345678" value={form.account}
+            onChange={e => set('account', e.target.value)}
+            className="input-field font-mono" />
+        </div>
       </div>
 
       <div className="flex gap-2">
         <div className="flex-1">
           <label className={labelClass}>Symbol</label>
           <input type="text" placeholder="EURUSD" value={form.symbol} onChange={e => set('symbol', e.target.value)}
-            className={`${inputClass} uppercase`} required />
+            className="input-field uppercase font-mono" required />
         </div>
         <div>
           <label className={labelClass}>Currency</label>
           <select value={form.currency} onChange={e => set('currency', e.target.value)}
-            className={inputClass}>
+            className="input-field">
             {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
@@ -105,8 +110,10 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
         <div className="flex gap-2">
           {['forex', 'futures'].map(type => (
             <button key={type} type="button" onClick={() => set('instrument', type)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors capitalize ${
-                form.instrument === type ? 'bg-accent text-surface border-accent' : 'border-border text-text-secondary'
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-150 capitalize ${
+                form.instrument === type
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'border-border text-text-muted hover:border-border-light'
               }`}>
               {type}
             </button>
@@ -118,14 +125,18 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
         <label className={labelClass}>Direction</label>
         <div className="flex gap-2">
           <button type="button" onClick={() => set('direction', 'long')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-              form.direction === 'long' ? 'bg-profit text-surface border-profit' : 'border-border text-text-secondary'
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-150 ${
+              form.direction === 'long'
+                ? 'bg-profit/10 text-profit border-profit/30'
+                : 'border-border text-text-muted hover:border-border-light'
             }`}>
             Long
           </button>
           <button type="button" onClick={() => set('direction', 'short')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-              form.direction === 'short' ? 'bg-loss text-surface border-loss' : 'border-border text-text-secondary'
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-150 ${
+              form.direction === 'short'
+                ? 'bg-loss/10 text-loss border-loss/30'
+                : 'border-border text-text-muted hover:border-border-light'
             }`}>
             Short
           </button>
@@ -137,13 +148,26 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
           <label className={labelClass}>Entry Price</label>
           <input type="number" step="any" placeholder="1.0850" value={form.entry_price}
             onChange={e => set('entry_price', e.target.value)}
-            className={inputClass} required />
+            className="input-field font-mono" required />
         </div>
         <div className="flex-1">
           <label className={labelClass}>Exit Price</label>
           <input type="number" step="any" placeholder="1.0900" value={form.exit_price}
             onChange={e => set('exit_price', e.target.value)}
-            className={inputClass} />
+            className="input-field font-mono" />
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className={labelClass}>Entry Time</label>
+          <input type="time" value={form.entry_time} onChange={e => set('entry_time', e.target.value)}
+            className="input-field font-mono" />
+        </div>
+        <div className="flex-1">
+          <label className={labelClass}>Exit Time</label>
+          <input type="time" value={form.exit_time} onChange={e => set('exit_time', e.target.value)}
+            className="input-field font-mono" />
         </div>
       </div>
 
@@ -154,13 +178,13 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
           </label>
           <input type="number" step="any" min="0" placeholder="1" value={form.size}
             onChange={e => set('size', e.target.value)}
-            className={inputClass} required />
+            className="input-field font-mono" required />
         </div>
         <div className="flex-1">
           <label className={labelClass}>
             P&amp;L ({form.currency})
             {!form.pnl_override && form.exit_price && (
-              <span className="font-normal text-text-muted ml-1">auto</span>
+              <span className="font-normal text-accent/60 ml-1 normal-case tracking-normal">auto</span>
             )}
           </label>
           <input type="number" step="0.01" placeholder="0.00" value={form.pnl}
@@ -168,41 +192,23 @@ export default function TradeForm({ trade, onSubmit, onCancel }) {
               set('pnl', e.target.value)
               set('pnl_override', true)
             }}
-            className={inputClass} />
+            className="input-field font-mono" />
         </div>
-      </div>
-
-      <div>
-        <label className={labelClass}>Setup Tag</label>
-        <select value={form.setup_tag} onChange={e => set('setup_tag', e.target.value)}
-          className={inputClass}>
-          <option value="">— none —</option>
-          {SETUP_TAGS.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-      </div>
-
-      <div>
-        <label className={labelClass}>Account</label>
-        <input type="text" placeholder="e.g. FTMO, IC Markets Live" value={form.account}
-          onChange={e => set('account', e.target.value)}
-          className={inputClass} />
       </div>
 
       <div>
         <label className={labelClass}>Notes</label>
         <textarea rows={3} placeholder="What did you see? Why did you enter?" value={form.notes}
           onChange={e => set('notes', e.target.value)}
-          className={`${inputClass} resize-none`} />
+          className="input-field resize-none" />
       </div>
 
       <ImageUpload label="Screenshot (optional)" value={form.screenshot_url}
         onChange={url => set('screenshot_url', url)} folder="trade-screenshots" />
 
       <div className="flex gap-2 pt-2">
-        <button type="button" onClick={onCancel}
-          className="flex-1 py-2 border border-border rounded-lg text-sm text-text-secondary">Cancel</button>
-        <button type="submit" disabled={saving}
-          className="flex-1 py-2 bg-accent text-surface rounded-lg text-sm font-medium disabled:opacity-50">
+        <button type="button" onClick={onCancel} className="flex-1 btn-secondary">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 btn-primary disabled:opacity-50">
           {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Trade'}
         </button>
       </div>

@@ -1,30 +1,66 @@
-import { useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTrades } from '../hooks/useTrades'
+import { supabase } from '../lib/supabase'
 import {
   getWinRate, getProfitFactor, getAvgRR, getEquityCurve,
-  getMaxDrawdown, getStreaks, getTotalPnL, resolvePnL
+  getMaxDrawdown, getStreaks, getTotalPnL, resolvePnL,
+  getAvgWin, getAvgLoss, getTradesByAsset, getTimeOfDayStats, getTradeDurationStats
 } from '../lib/tradeCalc'
+import { useGamification } from '../hooks/useGamification'
 import ErrorBanner from '../components/shared/ErrorBanner'
 import EmptyState from '../components/shared/EmptyState'
 
-function StatCard({ label, value, sub, valueClass = 'text-text' }) {
+// --- Filter bar ---
+const filterClass = 'bg-surface-50 border border-border rounded-xl px-2.5 py-1.5 text-xs text-text focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all'
+
+const PRESETS = [
+  { label: 'All Time', value: 'all' },
+  { label: 'This Month', value: 'month' },
+  { label: 'Last Month', value: 'last_month' },
+  { label: 'This Week', value: 'week' },
+  { label: 'Custom', value: 'custom' },
+]
+
+function getPresetDates(preset) {
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  if (preset === 'all') return { from: null, to: null }
+  if (preset === 'week') {
+    const d = new Date(now)
+    const day = d.getDay()
+    d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
+    return { from: d.toISOString().split('T')[0], to: today }
+  }
+  if (preset === 'month') {
+    return { from: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`, to: today }
+  }
+  if (preset === 'last_month') {
+    const y = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+    const m = now.getMonth() === 0 ? 12 : now.getMonth()
+    const last = new Date(y, m, 0).getDate()
+    return { from: `${y}-${String(m).padStart(2, '0')}-01`, to: `${y}-${String(m).padStart(2, '0')}-${last}` }
+  }
+  return { from: null, to: null }
+}
+
+// --- Stat card ---
+function StatCard({ label, value, sub, valueClass = 'text-text', glowClass = '' }) {
   return (
-    <div className="bg-card rounded-xl p-3 text-center border border-border">
-      <p className="text-xs text-text-muted mb-1">{label}</p>
-      <p className={`text-lg font-bold ${valueClass}`}>{value}</p>
-      {sub && <p className="text-xs text-text-muted mt-0.5">{sub}</p>}
+    <div className={`glass-card p-3 ${glowClass}`}>
+      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1">{label}</p>
+      <p className={`text-lg font-bold font-mono tracking-tight ${valueClass}`}>{value}</p>
+      {sub && <p className="text-[10px] text-text-muted mt-0.5">{sub}</p>}
     </div>
   )
 }
 
+// --- Equity curve ---
 function EquityCurve({ curve }) {
   if (curve.length < 2) {
     return (
-      <div className="bg-card rounded-xl p-4 border border-border">
-        <p className="text-xs font-medium text-text-secondary mb-2">Equity Curve</p>
-        <div className="h-24 flex items-center justify-center text-xs text-text-muted">
-          Not enough data
-        </div>
+      <div className="glass-card p-4">
+        <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">Equity Curve</p>
+        <div className="h-28 flex items-center justify-center text-xs text-text-muted">Not enough data</div>
       </div>
     )
   }
@@ -33,9 +69,7 @@ function EquityCurve({ curve }) {
   const min = Math.min(...values)
   const max = Math.max(...values)
   const range = max - min || 1
-  const W = 300
-  const H = 80
-  const pad = 4
+  const W = 300, H = 100, pad = 6
 
   const points = curve.map((p, i) => {
     const x = pad + (i / (curve.length - 1)) * (W - pad * 2)
@@ -44,51 +78,238 @@ function EquityCurve({ curve }) {
   }).join(' ')
 
   const lastVal = curve[curve.length - 1].value
-  const lineColor = lastVal >= 0 ? '#7da47a' : '#c47a7a'
+  const lineColor = lastVal >= 0 ? '#4ade80' : '#f87171'
+  const fillPoints = `${points.split(' ')[0].split(',')[0]},${H - pad} ${points} ${points.split(' ').at(-1).split(',')[0]},${H - pad}`
 
   return (
-    <div className="bg-card rounded-xl p-4 border border-border">
-      <div className="flex justify-between items-center mb-2">
-        <p className="text-xs font-medium text-text-secondary">Equity Curve</p>
-        <span className={`text-xs font-semibold ${lastVal >= 0 ? 'text-profit' : 'text-loss'}`}>
+    <div className="glass-card p-4">
+      <div className="flex justify-between items-center mb-3">
+        <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Equity Curve</p>
+        <span className={`text-sm font-bold font-mono ${lastVal >= 0 ? 'text-profit' : 'text-loss'}`}>
           {lastVal >= 0 ? '+' : ''}{lastVal.toFixed(2)}
         </span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-20" preserveAspectRatio="none">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-28" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={lineColor} stopOpacity="0.15" />
+            <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={fillPoints} fill="url(#eqGrad)" />
         {min < 0 && max > 0 && (
-          <line
-            x1={pad} y1={H - pad - ((0 - min) / range) * (H - pad * 2)}
+          <line x1={pad} y1={H - pad - ((0 - min) / range) * (H - pad * 2)}
             x2={W - pad} y2={H - pad - ((0 - min) / range) * (H - pad * 2)}
-            stroke="#333333" strokeWidth="1" strokeDasharray="4,4" />
+            stroke="#555861" strokeWidth="0.5" strokeDasharray="4,4" />
         )}
-        <polyline points={points} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round" />
+        <polyline points={points} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {curve.map((p, i) => {
           const x = pad + (i / (curve.length - 1)) * (W - pad * 2)
           const y = H - pad - ((p.value - min) / range) * (H - pad * 2)
-          return <circle key={i} cx={x.toFixed(1)} cy={y.toFixed(1)} r="2.5" fill={lineColor} />
+          return <circle key={i} cx={x.toFixed(1)} cy={y.toFixed(1)} r="2" fill={lineColor} opacity="0.8" />
         })}
+        {(() => {
+          const x = W - pad
+          const y = H - pad - ((lastVal - min) / range) * (H - pad * 2)
+          return <>
+            <circle cx={x} cy={y.toFixed(1)} r="6" fill={lineColor} opacity="0.15" />
+            <circle cx={x} cy={y.toFixed(1)} r="3" fill={lineColor} />
+          </>
+        })()}
       </svg>
     </div>
   )
 }
 
-export default function Dashboard() {
-  const { trades, loading, error } = useTrades({})
+// --- Bar chart for win rate by category ---
+function WinRateBarChart({ title, data, labelKey = 'label', emptyMsg = 'No data' }) {
+  if (data.length === 0) {
+    return (
+      <div className="glass-card p-4">
+        <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">{title}</p>
+        <p className="text-xs text-text-muted text-center py-4">{emptyMsg}</p>
+      </div>
+    )
+  }
 
+  const maxTotal = Math.max(...data.map(d => d.total))
+
+  return (
+    <div className="glass-card p-4">
+      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-3">{title}</p>
+      <div className="space-y-2">
+        {data.map((d, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-text-muted w-10 text-right flex-shrink-0">{d[labelKey]}</span>
+            <div className="flex-1 h-5 bg-surface-50 rounded overflow-hidden relative">
+              <div
+                className="h-full rounded bg-profit/30"
+                style={{ width: `${(d.total / maxTotal) * 100}%` }}
+              />
+              <div
+                className="h-full rounded bg-profit absolute top-0 left-0"
+                style={{ width: `${(d.wins / maxTotal) * 100}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-mono text-text-secondary w-10 flex-shrink-0">
+              {(d.winRate * 100).toFixed(0)}%
+            </span>
+            <span className="text-[10px] text-text-muted w-6 flex-shrink-0 text-right">{d.total}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-3 mt-2 text-[9px] text-text-muted">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-profit inline-block" /> Wins</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-profit/30 inline-block" /> Total</span>
+      </div>
+    </div>
+  )
+}
+
+// --- Asset breakdown table ---
+function AssetBreakdown({ assets }) {
+  if (assets.length === 0) return null
+  return (
+    <div className="glass-card overflow-hidden">
+      <div className="px-4 pt-3.5 pb-2">
+        <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Trades by Asset</p>
+      </div>
+      <div className="divide-y divide-border/60">
+        {assets.map(a => (
+          <div key={a.symbol} className="flex items-center justify-between px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-text font-mono">{a.symbol}</span>
+              <span className="text-[10px] text-text-muted">{a.count} trades</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-text-muted">
+                {a.winRate != null ? `${(a.winRate * 100).toFixed(0)}% WR` : '—'}
+              </span>
+              <span className={`text-sm font-bold font-mono ${a.totalPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
+                {a.totalPnL >= 0 ? '+' : ''}{a.totalPnL.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// --- Gamification widget ---
+function GamificationWidget({ gam }) {
+  const level = gam.getLevel()
+  const pet = gam.getPetStage()
+  const s = gam.state
+
+  return (
+    <div className="glass-card p-4 shadow-glow">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{pet.emoji}</span>
+          <div>
+            <p className="text-xs font-bold text-text">{s.pet_name}</p>
+            <p className="text-[10px] text-text-muted">{pet.name} · HP {s.pet_health}%</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-xs font-bold text-accent">Lv.{level.level} {level.name}</p>
+          <p className="text-[10px] text-text-muted font-mono">{s.xp} XP</p>
+        </div>
+      </div>
+
+      {/* XP progress bar */}
+      {level.next && (
+        <div className="mb-3">
+          <div className="h-1.5 bg-surface-50 rounded-full overflow-hidden">
+            <div className="h-full bg-accent rounded-full transition-all duration-500" style={{ width: `${level.progress * 100}%` }} />
+          </div>
+          <p className="text-[9px] text-text-muted mt-1 text-right">{level.xpInLevel}/{level.xpForNext} to Lv.{level.next.level}</p>
+        </div>
+      )}
+
+      {/* Pet health bar */}
+      <div className="mb-2">
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#1a1d27' }}>
+          <div className={`h-full rounded-full transition-all duration-500 ${
+            s.pet_health >= 60 ? 'bg-profit' : s.pet_health >= 30 ? 'bg-accent' : 'bg-loss'
+          }`} style={{ width: `${s.pet_health}%` }} />
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div>
+          <p className="text-lg font-bold font-mono text-accent">{s.journal_streak}</p>
+          <p className="text-[9px] text-text-muted">Day Streak</p>
+        </div>
+        <div>
+          <p className="text-lg font-bold font-mono text-text">{s.longest_streak}</p>
+          <p className="text-[9px] text-text-muted">Best Streak</p>
+        </div>
+        <div>
+          <p className="text-lg font-bold font-mono text-text">{s.total_trade_journals + s.total_daily_journals + s.total_weekly_journals}</p>
+          <p className="text-[9px] text-text-muted">Total Entries</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- Main Dashboard ---
+export default function Dashboard({ onNavigateTrade }) {
+  const { trades: allTrades, loading, error } = useTrades({})
+  const gam = useGamification()
+
+  // Filters
+  const [preset, setPreset] = useState('all')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
+  const [filterAccount, setFilterAccount] = useState('')
+  const [filterAsset, setFilterAsset] = useState('')
+
+  // Account list
+  const [accounts, setAccounts] = useState([])
+  useEffect(() => {
+    supabase.from('trades').select('account').not('account', 'is', null).then(({ data }) => {
+      const unique = [...new Set((data ?? []).map(r => r.account).filter(Boolean))].sort()
+      setAccounts(unique)
+    })
+  }, [allTrades])
+
+  // Asset list
+  const assets = useMemo(() => [...new Set(allTrades.map(t => t.symbol))].sort(), [allTrades])
+
+  // Filter trades
+  const trades = useMemo(() => {
+    let filtered = [...allTrades]
+    const dates = preset === 'custom' ? { from: customFrom || null, to: customTo || null } : getPresetDates(preset)
+    if (dates.from) filtered = filtered.filter(t => t.date >= dates.from)
+    if (dates.to) filtered = filtered.filter(t => t.date <= dates.to)
+    if (filterAccount) filtered = filtered.filter(t => t.account === filterAccount)
+    if (filterAsset) filtered = filtered.filter(t => t.symbol === filterAsset)
+    return filtered
+  }, [allTrades, preset, customFrom, customTo, filterAccount, filterAsset])
+
+  // Computed stats
   const curve = useMemo(() => getEquityCurve(trades), [trades])
   const totalPnL = useMemo(() => getTotalPnL(trades), [trades])
   const winRate = useMemo(() => getWinRate(trades), [trades])
   const pf = useMemo(() => getProfitFactor(trades), [trades])
   const avgRR = useMemo(() => getAvgRR(trades), [trades])
+  const avgWin = useMemo(() => getAvgWin(trades), [trades])
+  const avgLoss = useMemo(() => getAvgLoss(trades), [trades])
   const maxDd = useMemo(() => getMaxDrawdown(trades), [trades])
   const streak = useMemo(() => getStreaks(trades), [trades])
+  const assetStats = useMemo(() => getTradesByAsset(trades), [trades])
+  const todStats = useMemo(() => getTimeOfDayStats(trades), [trades])
+  const durStats = useMemo(() => getTradeDurationStats(trades), [trades])
 
   const closedTrades = trades.filter(t => t.exit_price != null)
   const sorted = [...closedTrades].sort((a, b) => resolvePnL(b) - resolvePnL(a))
   const bestTrade = sorted[0]
   const worstTrade = sorted[sorted.length - 1]
   const recentTrades = [...trades].slice(0, 5)
-
   const defaultCurrency = trades[0]?.currency ?? 'USD'
 
   function fmt(val, decimals = 2) {
@@ -96,91 +317,160 @@ export default function Dashboard() {
     return val.toFixed(decimals)
   }
 
-  if (loading) return <p className="text-sm text-text-muted text-center py-8">Loading...</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 animate-fade-in">
       <ErrorBanner message={error} />
+
+      {/* Gamification */}
+      {!gam.loading && <GamificationWidget gam={gam} />}
+
+      {/* Filters */}
+      <div className="glass-card p-3 space-y-2">
+        <div className="flex gap-1.5 flex-wrap">
+          {PRESETS.map(p => (
+            <button key={p.value} onClick={() => setPreset(p.value)}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                preset === p.value
+                  ? 'bg-accent/10 text-accent border border-accent/30'
+                  : 'text-text-muted border border-transparent hover:text-text-secondary'
+              }`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {preset === 'custom' && (
+          <div className="flex gap-2">
+            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+              className={filterClass + ' flex-1'} placeholder="From" />
+            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+              className={filterClass + ' flex-1'} placeholder="To" />
+          </div>
+        )}
+        <div className="flex gap-2">
+          {accounts.length > 0 && (
+            <select value={filterAccount} onChange={e => setFilterAccount(e.target.value)} className={filterClass + ' flex-1'}>
+              <option value="">All accounts</option>
+              {accounts.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          )}
+          {assets.length > 0 && (
+            <select value={filterAsset} onChange={e => setFilterAsset(e.target.value)} className={filterClass + ' flex-1'}>
+              <option value="">All assets</option>
+              {assets.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          )}
+        </div>
+      </div>
 
       {trades.length === 0 ? (
         <EmptyState icon="📊" message="No trades yet" sub="Log your first trade in the Trades tab" />
       ) : (
         <>
+          {/* Hero P&L */}
+          <div className={`glass-card p-5 text-center ${totalPnL >= 0 ? 'shadow-glow-profit' : 'shadow-glow-loss'}`}>
+            <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">Total P&L</p>
+            <p className={`text-3xl font-extrabold font-mono tracking-tight ${totalPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
+              {totalPnL >= 0 ? '+' : ''}{fmt(totalPnL)}
+              <span className="text-base font-semibold text-text-muted ml-1.5">{defaultCurrency}</span>
+            </p>
+            <p className="text-xs text-text-muted mt-1.5">{closedTrades.length} closed trades</p>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2">
+            <StatCard label="Win Rate" value={winRate != null ? `${(winRate * 100).toFixed(0)}%` : '—'}
+              sub={winRate != null ? `${Math.round(winRate * closedTrades.length)}W / ${Math.round((1 - winRate) * closedTrades.length)}L` : ''} />
+            <StatCard label="Profit Factor" value={pf != null ? (isFinite(pf) ? fmt(pf) : '∞') : '—'} />
+            <StatCard label="Avg R:R" value={avgRR != null ? fmt(avgRR) : '—'} />
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
-            <StatCard
-              label="Total P&L"
-              value={`${totalPnL >= 0 ? '+' : ''}${fmt(totalPnL)} ${defaultCurrency}`}
-              sub={`${closedTrades.length} closed trades`}
-              valueClass={totalPnL >= 0 ? 'text-profit' : 'text-loss'}
-            />
-            <StatCard
-              label="Win Rate"
-              value={winRate != null ? `${(winRate * 100).toFixed(0)}%` : '—'}
-              sub={winRate != null ? `${Math.round(winRate * closedTrades.length)}W / ${Math.round((1 - winRate) * closedTrades.length)}L` : ''}
-            />
-            <StatCard
-              label="Profit Factor"
-              value={pf != null ? (isFinite(pf) ? fmt(pf) : '∞') : '—'}
-              sub="gross profit / gross loss"
-            />
-            <StatCard
-              label="Avg R:R"
-              value={avgRR != null ? fmt(avgRR) : '—'}
-              sub="avg win / avg loss"
-            />
+            <StatCard label="Avg Win" value={avgWin != null ? `+${fmt(avgWin)}` : '—'} valueClass="text-profit" />
+            <StatCard label="Avg Loss" value={avgLoss != null ? fmt(avgLoss) : '—'} valueClass="text-loss" />
           </div>
 
           <EquityCurve curve={curve} />
 
+          {/* Drawdown & Streak */}
           <div className="grid grid-cols-2 gap-2">
-            <StatCard
-              label="Max Drawdown"
-              value={maxDd > 0 ? `-${fmt(maxDd)} ${defaultCurrency}` : '—'}
-              valueClass="text-loss"
-            />
-            <StatCard
-              label="Current Streak"
+            <StatCard label="Max Drawdown" value={maxDd > 0 ? `-${fmt(maxDd)}` : '—'}
+              sub={maxDd > 0 ? defaultCurrency : undefined} valueClass="text-loss"
+              glowClass={maxDd > 0 ? 'shadow-glow-loss' : ''} />
+            <StatCard label="Current Streak"
               value={streak.count > 0 ? `${streak.count} ${streak.type}${streak.count > 1 ? 's' : ''}` : '—'}
               valueClass={streak.type === 'win' ? 'text-profit' : streak.type === 'loss' ? 'text-loss' : 'text-text'}
-            />
+              glowClass={streak.type === 'win' ? 'shadow-glow-profit' : ''} />
           </div>
 
+          {/* Best / Worst */}
           {bestTrade && (
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-card rounded-xl p-3 border border-border">
-                <p className="text-xs text-text-muted mb-1">Best Trade</p>
-                <p className="font-semibold text-text">{bestTrade.symbol}</p>
-                <p className="text-sm font-bold text-profit">+{fmt(resolvePnL(bestTrade))} {bestTrade.currency}</p>
-                <p className="text-xs text-text-muted">{bestTrade.date}</p>
+              <div className="glass-card p-3.5 border-l-2 border-l-profit">
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">Best Trade</p>
+                <p className="font-bold text-sm text-text tracking-tight">{bestTrade.symbol}</p>
+                <p className="text-sm font-bold font-mono text-profit">+{fmt(resolvePnL(bestTrade))} {bestTrade.currency}</p>
+                <p className="text-[10px] text-text-muted font-mono mt-1">{bestTrade.date}</p>
               </div>
               {worstTrade && worstTrade.id !== bestTrade.id && (
-                <div className="bg-card rounded-xl p-3 border border-border">
-                  <p className="text-xs text-text-muted mb-1">Worst Trade</p>
-                  <p className="font-semibold text-text">{worstTrade.symbol}</p>
-                  <p className="text-sm font-bold text-loss">{fmt(resolvePnL(worstTrade))} {worstTrade.currency}</p>
-                  <p className="text-xs text-text-muted">{worstTrade.date}</p>
+                <div className="glass-card p-3.5 border-l-2 border-l-loss">
+                  <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">Worst Trade</p>
+                  <p className="font-bold text-sm text-text tracking-tight">{worstTrade.symbol}</p>
+                  <p className="text-sm font-bold font-mono text-loss">{fmt(resolvePnL(worstTrade))} {worstTrade.currency}</p>
+                  <p className="text-[10px] text-text-muted font-mono mt-1">{worstTrade.date}</p>
                 </div>
               )}
             </div>
           )}
 
+          {/* Trades by Asset */}
+          <AssetBreakdown assets={assetStats} />
+
+          {/* Time of Day chart */}
+          <WinRateBarChart title="Win Rate by Time of Day" data={todStats}
+            emptyMsg="Add entry_time to trades to see this chart" />
+
+          {/* Duration chart */}
+          <WinRateBarChart title="Win Rate by Duration" data={durStats}
+            emptyMsg="Add entry/exit times to trades to see this chart" />
+
+          {/* Recent trades (clickable) */}
           {recentTrades.length > 0 && (
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <p className="text-xs font-medium text-text-secondary px-4 pt-3 pb-2">Recent Trades</p>
-              <div className="divide-y divide-border">
+            <div className="glass-card overflow-hidden">
+              <div className="px-4 pt-3.5 pb-2">
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Recent Trades</p>
+              </div>
+              <div className="divide-y divide-border/60">
                 {recentTrades.map(t => {
                   const pnl = resolvePnL(t)
                   const isOpen = t.exit_price == null
                   return (
-                    <div key={t.id} className="flex items-center justify-between px-4 py-2">
+                    <div key={t.id}
+                      onClick={() => onNavigateTrade && onNavigateTrade(t.id)}
+                      className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-50/50 transition-colors cursor-pointer">
                       <div>
-                        <span className="text-sm font-medium text-text">{t.symbol}</span>
-                        <span className={`ml-2 text-xs ${t.direction === 'long' ? 'text-profit' : 'text-loss'}`}>{t.direction}</span>
-                        <p className="text-xs text-text-muted">{t.date}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-text tracking-tight">{t.symbol}</span>
+                          <span className={`text-[10px] font-semibold uppercase ${t.direction === 'long' ? 'text-profit' : 'text-loss'}`}>{t.direction}</span>
+                          {t.account && <span className="text-[10px] text-text-muted">{t.account}</span>}
+                        </div>
+                        <p className="text-[10px] text-text-muted font-mono mt-0.5">{t.date}</p>
                       </div>
-                      <span className={`text-sm font-semibold ${isOpen ? 'text-text-muted' : pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
-                        {isOpen ? 'Open' : `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-bold font-mono ${isOpen ? 'text-text-muted' : pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
+                          {isOpen ? 'Open' : `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`}
+                        </span>
+                        <svg className="w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   )
                 })}

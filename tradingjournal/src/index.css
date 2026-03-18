@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,15 +14,67 @@
     width: 4px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-surface;
+    @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
     @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-light;
   }
 
   /* Date/month input dark styling */
   input[type="date"],
   input[type="month"] {
     color-scheme: dark;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-accent/30 text-text;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card border border-border rounded-2xl shadow-card;
+    backdrop-filter: blur(8px);
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-200;
+  }
+  .glass-card-hover:hover {
+    @apply shadow-card-hover border-border-light;
+    transform: translateY(-1px);
+  }
+
+  .stat-value {
+    @apply text-xl font-bold font-mono tracking-tight;
+  }
+
+  .badge {
+    @apply text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-50 border border-border rounded-xl px-3 py-2.5 text-sm text-text placeholder-text-muted
+           focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all duration-150;
+  }
+
+  .btn-primary {
+    @apply py-2.5 bg-accent text-surface font-semibold rounded-xl text-sm
+           hover:bg-accent-hover active:scale-[0.98] transition-all duration-150 shadow-glow;
+  }
+
+  .btn-secondary {
+    @apply py-2.5 border border-border text-text-secondary rounded-xl text-sm font-medium
+           hover:bg-surface-50 hover:border-border-light active:scale-[0.98] transition-all duration-150;
+  }
+
+  /* Gradient line accent */
+  .accent-line {
+    background: linear-gradient(90deg, #d4a574, #d4a574 40%, transparent);
+    height: 2px;
   }
 }
