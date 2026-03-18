@@ -4,21 +4,11 @@ import { useExpenses } from '../hooks/useExpenses'
 import { useLoans } from '../hooks/useLoans'
 import { useSubscriptions, daysUntilDue } from '../hooks/useSubscriptions'
 import { useVitamins, daysUntilRestock } from '../hooks/useVitamins'
+import { useBudgets } from '../hooks/useBudgets'
+import { useCategories } from '../hooks/useCategories'
 import { formatAmount } from '../lib/currencyUtils'
 import { getRemainingBalance } from '../lib/loanCalc'
 import PeriodSelector, { getDateRange } from '../components/shared/PeriodSelector'
-
-// TODO: Replace with useBudgets hook in Task 9
-function useBudgetsStub() {
-  return { budget: null, items: [], loading: false, error: null }
-}
-
-// TODO: Replace with useCategories colorMap in Task 9
-const TEMP_CATEGORY_COLORS = {
-  Food: '#c47a5a', Transport: '#5a7a94', Shopping: '#94707a',
-  Entertainment: '#7a6a94', Health: '#7a8c6e', Education: '#c9a040',
-  Utilities: '#6b6058', Groceries: '#8c946e', Travel: '#5a8c8c', Other: '#9a8e80',
-}
 
 function getUpcomingPayments(subscriptions, months = 3) {
   const today = new Date()
@@ -63,9 +53,11 @@ export default function Dashboard() {
   const { loans, loading: loanLoading } = useLoans()
   const { subscriptions, loading: subLoading } = useSubscriptions()
   const { vitamins, loading: vitLoading } = useVitamins()
-  const { budget } = useBudgetsStub()
+  const currentMonth = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`
+  const { budget, loading: budgetLoading } = useBudgets(currentMonth)
+  const { colorMap } = useCategories()
 
-  const loading = expLoading || loanLoading || subLoading || vitLoading
+  const loading = expLoading || loanLoading || subLoading || vitLoading || budgetLoading
 
   const totalDebt = loans
     .filter(l => (l.currency ?? defaultCurrency) === defaultCurrency)
@@ -94,7 +86,7 @@ export default function Dashboard() {
 
   // Budget widget helpers
   const budgetSpent = periodTotal
-  const budgetTotal = budget ? budget.amount : 0
+  const budgetTotal = budget ? budget.total_allowance : 0
   const budgetRatio = budgetTotal > 0 ? budgetSpent / budgetTotal : 0
   const budgetPct = Math.round(budgetRatio * 100)
   const budgetBarColor = budgetRatio > 1 ? 'bg-danger' : budgetRatio >= 0.8 ? 'bg-warning' : 'bg-positive'
@@ -137,7 +129,7 @@ export default function Dashboard() {
                 <div key={cat} className="flex items-center gap-2">
                   <div
                     className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: TEMP_CATEGORY_COLORS[cat] || '#9a8e80' }}
+                    style={{ backgroundColor: colorMap[cat]?.hex || '#9a8e80' }}
                   />
                   <span className="text-xs text-text-primary flex-1">{cat}</span>
                   <span className="text-xs font-mono text-highlight">{formatAmount(amt, defaultCurrency)}</span>
@@ -146,7 +138,7 @@ export default function Dashboard() {
                       className="h-full rounded-full"
                       style={{
                         width: `${periodTotal > 0 ? (amt / periodTotal) * 100 : 0}%`,
-                        backgroundColor: TEMP_CATEGORY_COLORS[cat] || '#9a8e80',
+                        backgroundColor: colorMap[cat]?.hex || '#9a8e80',
                       }}
                     />
                   </div>
