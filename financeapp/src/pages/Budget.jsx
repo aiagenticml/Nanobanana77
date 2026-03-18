@@ -294,7 +294,7 @@ export default function Budget() {
 
       {/* Summary footer */}
       {budget && items.length > 0 && (
-        <div className="fixed bottom-16 left-0 right-0 z-30 bg-card border-t border-border">
+        <div className="fixed bottom-28 left-0 right-0 z-30 bg-card border-t border-border">
           <div className="max-w-lg mx-auto px-4 py-3 flex justify-between text-sm">
             <div>
               <span className="text-text-muted">Allocated: </span>
