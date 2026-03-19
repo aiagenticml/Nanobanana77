@@ -51,7 +51,7 @@ export default function ExpenseForm({ onSubmit, onCancel, categories }) {
           <label className="block text-sm font-medium text-text-secondary mb-1">Currency</label>
           <select value={form.currency} onChange={e => set('currency', e.target.value)}
             className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm">
-            {Object.keys(CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
+            {Object.keys(CURRENCIES).sort().map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       </div>

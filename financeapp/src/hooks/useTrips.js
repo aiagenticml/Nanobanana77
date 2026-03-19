@@ -79,7 +79,11 @@ export function useTrips() {
 
   function totalForTrip(trip) {
     const expenses = expensesForTrip(trip.id)
-    return expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
+    return expenses.reduce((sum, e) => {
+      const cur = e.currency || trip.currency
+      if (cur === trip.currency) return sum + parseFloat(e.amount || 0)
+      return sum
+    }, 0)
   }
 
   function totalSGDForTrip(trip) {
