@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTrips } from '../hooks/useTrips'
+import { useTrips, STANDARD_TRIP_CATEGORIES } from '../hooks/useTrips'
 import { TRIP_CURRENCIES } from '../lib/currencyUtils'
 import EmptyState from '../components/shared/EmptyState'
 import ErrorBanner from '../components/shared/ErrorBanner'
@@ -107,10 +107,10 @@ function TripForm({ onSubmit, onCancel }) {
   )
 }
 
-function ExpenseForm({ allCategories, tripCurrency, onSubmit, onCancel }) {
+function ExpenseForm({ tripCurrency, onSubmit, onCancel }) {
   const [form, setForm] = useState({
     date: todayStr(),
-    category: allCategories[0] || 'Other',
+    category: STANDARD_TRIP_CATEGORIES[0],
     amount: '',
     note: '',
     currency: tripCurrency,
@@ -135,7 +135,7 @@ function ExpenseForm({ allCategories, tripCurrency, onSubmit, onCancel }) {
           onChange={e => set('category', e.target.value)}
           className="flex-1 bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
         >
-          {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+          {STANDARD_TRIP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input
           type="date"
@@ -210,9 +210,9 @@ function EditTripRateForm({ trip, onSave, onCancel }) {
 
 export default function Overseas() {
   const {
-    trips, allCategories, loading, error,
+    trips, loading, error,
     addTrip, updateTrip, deleteTrip,
-    addTripExpense, deleteTripExpense, addCustomCategory,
+    addTripExpense, deleteTripExpense,
     expensesForTrip, totalForTrip, totalSGDForTrip,
   } = useTrips()
 
@@ -221,8 +221,6 @@ export default function Overseas() {
   const [addingExpenseFor, setAddingExpenseFor] = useState(null)
   const [editingRateFor, setEditingRateFor] = useState(null)
   const [deletingTripId, setDeletingTripId] = useState(null)
-  const [newCategoryName, setNewCategoryName] = useState('')
-  const [showCategoryInput, setShowCategoryInput] = useState(false)
 
   async function handleAddTrip(data) {
     try {
@@ -250,16 +248,6 @@ export default function Overseas() {
       await deleteTrip(id)
       setDeletingTripId(null)
       if (expandedId === id) setExpandedId(null)
-    } catch { /* surfaced via hook state */ }
-  }
-
-  async function handleAddCategory(e) {
-    e.preventDefault()
-    if (!newCategoryName.trim()) return
-    try {
-      await addCustomCategory(newCategoryName)
-      setNewCategoryName('')
-      setShowCategoryInput(false)
     } catch { /* surfaced via hook state */ }
   }
 
@@ -297,10 +285,14 @@ export default function Overseas() {
         const totalSGD = totalSGDForTrip(trip)
         const isExpanded = expandedId === trip.id
 
-        // Group by category
-        const byCategory = {}
+        // Build category totals — always show all standard categories
+        const byCategory = Object.fromEntries(STANDARD_TRIP_CATEGORIES.map(c => [c, 0]))
         for (const e of expenses) {
-          byCategory[e.category] = (byCategory[e.category] || 0) + parseFloat(e.amount || 0)
+          if (byCategory[e.category] !== undefined) {
+            byCategory[e.category] += parseFloat(e.amount || 0)
+          } else {
+            byCategory[e.category] = parseFloat(e.amount || 0)
+          }
         }
 
         return (
@@ -354,20 +346,20 @@ export default function Overseas() {
                   )}
                 </div>
 
-                {/* Category breakdown */}
-                {Object.keys(byCategory).length > 0 && (
-                  <div className="px-4 py-3 border-b border-border/50">
-                    <p className="text-xs text-text-muted mb-2">By category</p>
-                    <div className="grid grid-cols-2 gap-1">
-                      {Object.entries(byCategory).map(([cat, amt]) => (
-                        <div key={cat} className="flex justify-between items-center">
-                          <span className="text-xs text-text-secondary">{cat}</span>
-                          <span className="text-xs font-mono text-text-primary">{trip.currency} {amt.toFixed(2)}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* Category breakdown — always show all 6 */}
+                <div className="px-4 py-3 border-b border-border/50">
+                  <p className="text-xs text-text-muted mb-2">By category</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {Object.entries(byCategory).map(([cat, amt]) => (
+                      <div key={cat} className="flex justify-between items-center py-0.5">
+                        <span className={`text-xs ${amt > 0 ? 'text-text-secondary' : 'text-text-muted'}`}>{cat}</span>
+                        <span className={`text-xs font-mono ${amt > 0 ? 'text-text-primary' : 'text-text-muted'}`}>
+                          {trip.currency} {amt.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
 
                 {/* Expenses list */}
                 <div className="px-4 pb-4">
@@ -394,7 +386,6 @@ export default function Overseas() {
 
                   {addingExpenseFor === trip.id && (
                     <ExpenseForm
-                      allCategories={allCategories}
                       tripCurrency={trip.currency}
                       onSubmit={(data) => handleAddExpense(trip.id, data)}
                       onCancel={() => setAddingExpenseFor(null)}
@@ -448,40 +439,6 @@ export default function Overseas() {
           <span className="text-lg leading-none">+</span> New trip
         </button>
       )}
-
-      {/* Manage custom categories */}
-      <div className="bg-card border border-border rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-medium text-text-secondary">Custom expense categories</p>
-          <button
-            onClick={() => setShowCategoryInput(!showCategoryInput)}
-            className="text-xs text-accent hover:underline"
-          >
-            {showCategoryInput ? 'Cancel' : '+ Add category'}
-          </button>
-        </div>
-        {showCategoryInput && (
-          <form onSubmit={handleAddCategory} className="flex gap-2 mb-2">
-            <input
-              type="text"
-              placeholder="Category name"
-              value={newCategoryName}
-              onChange={e => setNewCategoryName(e.target.value)}
-              autoFocus
-              className="flex-1 bg-input border border-border text-text-primary rounded-lg px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none"
-            />
-            <button type="submit" className="bg-accent text-white rounded-lg px-3 py-1.5 text-sm hover:bg-accent-hover">Add</button>
-          </form>
-        )}
-        <div className="flex flex-wrap gap-1.5">
-          {['Hotel', 'Food', 'Flight', 'Activities', 'Insurance', 'Alcohol'].map(c => (
-            <span key={c} className="text-xs bg-card-hover text-text-muted px-2 py-0.5 rounded-full">{c}</span>
-          ))}
-          {allCategories.slice(6).map(c => (
-            <span key={c} className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">{c}</span>
-          ))}
-        </div>
-      </div>
 
       {/* Delete confirmation dialog */}
       {deletingTripId && (
