@@ -83,7 +83,23 @@ export function useTrips() {
   }
 
   function totalSGDForTrip(trip) {
-    return totalForTrip(trip) * parseFloat(trip.exchange_rate_to_sgd || 1)
+    const expenses = expensesForTrip(trip.id)
+    const rate = parseFloat(trip.exchange_rate_to_sgd || 1)
+    return expenses.reduce((sum, e) => {
+      const amt = parseFloat(e.amount || 0)
+      const currency = e.currency || trip.currency
+      if (currency === 'SGD') return sum + amt
+      if (currency === trip.currency) return sum + amt * rate
+      return sum // other currencies skipped (no rate available)
+    }, 0)
+  }
+
+  function hasUnconvertedExpenses(trip) {
+    const expenses = expensesForTrip(trip.id)
+    return expenses.some(e => {
+      const c = e.currency || trip.currency
+      return c !== 'SGD' && c !== trip.currency
+    })
   }
 
   const allCategories = [...STANDARD_TRIP_CATEGORIES, ...customCategories.map(c => c.name)]
@@ -92,7 +108,7 @@ export function useTrips() {
     trips, tripExpenses, customCategories, allCategories, loading, error,
     addTrip, updateTrip, deleteTrip,
     addTripExpense, deleteTripExpense, addCustomCategory,
-    expensesForTrip, totalForTrip, totalSGDForTrip,
+    expensesForTrip, totalForTrip, totalSGDForTrip, hasUnconvertedExpenses,
     refetch: fetch,
   }
 }

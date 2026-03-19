@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useTrips } from '../hooks/useTrips'
-import { CURRENCIES } from '../lib/currencyUtils'
+import { TRIP_CURRENCIES } from '../lib/currencyUtils'
 import EmptyState from '../components/shared/EmptyState'
 import ErrorBanner from '../components/shared/ErrorBanner'
-
-const CYCLE_LABEL = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' }
 
 function todayStr() {
   return new Date().toISOString().split('T')[0]
@@ -64,7 +62,7 @@ function TripForm({ onSubmit, onCancel }) {
             onChange={e => set('currency', e.target.value)}
             className="w-full bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
           >
-            {Object.keys(CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
+            {Object.keys(TRIP_CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className="flex-1">
@@ -109,12 +107,13 @@ function TripForm({ onSubmit, onCancel }) {
   )
 }
 
-function ExpenseForm({ allCategories, currency, onSubmit, onCancel }) {
+function ExpenseForm({ allCategories, tripCurrency, onSubmit, onCancel }) {
   const [form, setForm] = useState({
     date: todayStr(),
     category: allCategories[0] || 'Other',
     amount: '',
     note: '',
+    currency: tripCurrency,
   })
 
   function set(field, value) {
@@ -125,7 +124,7 @@ function ExpenseForm({ allCategories, currency, onSubmit, onCancel }) {
     e.preventDefault()
     const amt = parseFloat(form.amount)
     if (!amt || amt <= 0) return
-    onSubmit({ date: form.date, category: form.category, amount: amt, note: form.note.trim() || null })
+    onSubmit({ date: form.date, category: form.category, amount: amt, note: form.note.trim() || null, currency: form.currency })
   }
 
   return (
@@ -146,9 +145,13 @@ function ExpenseForm({ allCategories, currency, onSubmit, onCancel }) {
         />
       </div>
       <div className="flex gap-2">
-        <div className="flex items-center bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-muted">
-          {currency}
-        </div>
+        <select
+          value={form.currency}
+          onChange={e => set('currency', e.target.value)}
+          className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+        >
+          {Object.keys(TRIP_CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
         <input
           type="number"
           step="0.01"
@@ -392,7 +395,7 @@ export default function Overseas() {
                   {addingExpenseFor === trip.id && (
                     <ExpenseForm
                       allCategories={allCategories}
-                      currency={trip.currency}
+                      tripCurrency={trip.currency}
                       onSubmit={(data) => handleAddExpense(trip.id, data)}
                       onCancel={() => setAddingExpenseFor(null)}
                     />
@@ -415,7 +418,7 @@ export default function Overseas() {
                         <span className="text-xs text-text-muted">{entry.date}</span>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="font-mono text-sm text-text-primary">{trip.currency} {parseFloat(entry.amount).toFixed(2)}</span>
+                        <span className="font-mono text-sm text-text-primary">{entry.currency || trip.currency} {parseFloat(entry.amount).toFixed(2)}</span>
                         <button
                           onClick={() => deleteTripExpense(entry.id)}
                           className="text-text-muted hover:text-danger transition-colors"
