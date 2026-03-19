@@ -69,7 +69,7 @@ function TripForm({ onSubmit, onCancel }) {
           <label className="block text-xs text-text-muted mb-1">Rate to SGD (1 {form.currency} = ? SGD)</label>
           <input
             type="number"
-            step="0.0001"
+            step="any"
             min="0"
             placeholder="e.g. 0.0089"
             value={form.exchange_rate_to_sgd}
