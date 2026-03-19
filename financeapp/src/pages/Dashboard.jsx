@@ -1,13 +1,11 @@
 import { useState, useContext, useMemo } from 'react'
 import { SettingsContext } from '../App'
 import { useExpenses } from '../hooks/useExpenses'
-import { useLoans } from '../hooks/useLoans'
 import { useSubscriptions, daysUntilDue } from '../hooks/useSubscriptions'
-import { useVitamins, daysUntilRestock } from '../hooks/useVitamins'
+import { useInsurance } from '../hooks/useInsurance'
 import { useBudgets } from '../hooks/useBudgets'
 import { useCategories } from '../hooks/useCategories'
 import { formatAmount } from '../lib/currencyUtils'
-import { getRemainingBalance } from '../lib/loanCalc'
 import PeriodSelector from '../components/shared/PeriodSelector'
 import { getDateRange } from '../lib/dateRange'
 
@@ -47,22 +45,16 @@ export default function Dashboard() {
   const [period, setPeriod] = useState('month')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [billsOpen, setBillsOpen] = useState(false)
-  const [restockOpen, setRestockOpen] = useState(false)
 
   const dateRange = useMemo(() => getDateRange(period, selectedDate), [period, selectedDate])
   const { expenses, loading: expLoading } = useExpenses(dateRange)
-  const { loans, loading: loanLoading } = useLoans()
   const { subscriptions, loading: subLoading } = useSubscriptions()
-  const { vitamins, loading: vitLoading } = useVitamins()
+  const { policies, loading: insLoading } = useInsurance()
   const currentMonth = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`
   const { budget, items: budgetItems, loading: budgetLoading } = useBudgets(currentMonth)
   const { colorMap } = useCategories()
 
-  const loading = expLoading || loanLoading || subLoading || vitLoading || budgetLoading
-
-  const totalDebt = loans
-    .filter(l => (l.currency ?? defaultCurrency) === defaultCurrency)
-    .reduce((sum, l) => sum + getRemainingBalance(l), 0)
+  const loading = expLoading || subLoading || insLoading || budgetLoading
 
   const filtered = expenses.filter(e => e.currency === defaultCurrency)
   const periodTotal = filtered.reduce((sum, e) => sum + parseFloat(e.amount), 0)
@@ -71,7 +63,11 @@ export default function Dashboard() {
     return acc
   }, {})
 
-  const upcomingPayments = useMemo(() => getUpcomingPayments(subscriptions), [subscriptions])
+  const upcomingPayments = useMemo(() => {
+    const subPayments = getUpcomingPayments(subscriptions).map(p => ({ ...p, _source: 'subscription' }))
+    const insPayments = getUpcomingPayments(policies).map(p => ({ ...p, _source: 'insurance' }))
+    return [...subPayments, ...insPayments].sort((a, b) => a.projected_date - b.projected_date)
+  }, [subscriptions, policies])
   const billCount = upcomingPayments.length
 
   // Group upcoming payments by month
@@ -171,15 +167,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Total debt */}
-      <div className="bg-card border border-border rounded-xl p-4">
-        <p className="text-sm text-text-secondary mb-1">Total outstanding debt ({defaultCurrency})</p>
-        <p className="text-2xl font-mono text-danger transition-opacity duration-150">
-          {formatAmount(totalDebt, defaultCurrency)}
-        </p>
-        <p className="text-xs text-text-muted mt-1">{loans.length} active loan{loans.length !== 1 ? 's' : ''}</p>
-      </div>
-
       {/* Bills to be paid — clickable, expands to show next 3 months */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <button
@@ -217,6 +204,9 @@ export default function Dashboard() {
                         <div key={`${p.id}-${i}`} className="flex justify-between items-center">
                           <div>
                             <span className="text-sm font-medium text-text-primary">{p.name}</span>
+                            {p._source === 'insurance' && (
+                              <span className="ml-1.5 text-xs bg-accent/10 text-accent px-1.5 py-0.5 rounded">ins</span>
+                            )}
                             <span className={`ml-2 text-xs ${
                               days < 0 ? 'text-danger'
                                 : days <= 7 ? 'text-warning'
@@ -237,65 +227,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Vitamins restock soon */}
-      {(() => {
-        const restockSoon = vitamins
-          .map(v => ({ ...v, daysLeft: daysUntilRestock(v.date_purchased, v.servings) }))
-          .filter(v => v.daysLeft <= 14)
-          .sort((a, b) => a.daysLeft - b.daysLeft)
-
-        return (
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <button
-              onClick={() => setRestockOpen(!restockOpen)}
-              className="w-full p-4 flex items-center justify-between text-left"
-            >
-              <div>
-                <p className="text-sm text-text-secondary">Vitamins to restock</p>
-                <p className="text-xs text-text-muted mt-0.5">
-                  {restockSoon.length === 0
-                    ? 'All stocked up'
-                    : `${restockSoon.length} vitamin${restockSoon.length !== 1 ? 's' : ''} running low`}
-                </p>
-              </div>
-              <svg
-                className={`w-4 h-4 text-text-muted transition-transform ${restockOpen ? 'rotate-180' : ''}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {restockOpen && (
-              <div className="px-4 pb-4">
-                {restockSoon.length === 0 ? (
-                  <p className="text-sm text-positive">All stocked up! No vitamins need restocking soon.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {restockSoon.map(v => (
-                      <div key={v.id} className="flex justify-between items-center">
-                        <div>
-                          <span className="text-sm font-medium text-text-primary">{v.name}</span>
-                          <span className={`ml-2 text-xs ${
-                            v.daysLeft <= 0 ? 'text-danger'
-                              : v.daysLeft <= 7 ? 'text-warning'
-                              : 'text-positive'
-                          }`}>
-                            {v.daysLeft < 0 ? `${Math.abs(v.daysLeft)}d overdue`
-                              : v.daysLeft === 0 ? 'today'
-                              : `${v.daysLeft}d left`}
-                          </span>
-                        </div>
-                        <span className="text-sm font-mono text-highlight">{formatAmount(v.cost, v.currency)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )
-      })()}
     </div>
   )
 }
