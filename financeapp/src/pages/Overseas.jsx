@@ -62,7 +62,7 @@ function TripForm({ onSubmit, onCancel }) {
             onChange={e => set('currency', e.target.value)}
             className="w-full bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
           >
-            {Object.keys(TRIP_CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
+            {Object.keys(TRIP_CURRENCIES).sort().map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className="flex-1">
@@ -150,7 +150,7 @@ function ExpenseForm({ tripCurrency, onSubmit, onCancel }) {
           onChange={e => set('currency', e.target.value)}
           className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
         >
-          {Object.keys(TRIP_CURRENCIES).map(c => <option key={c} value={c}>{c}</option>)}
+          {Object.keys(TRIP_CURRENCIES).sort().map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input
           type="number"
@@ -285,13 +285,17 @@ export default function Overseas() {
         const totalSGD = totalSGDForTrip(trip)
         const isExpanded = expandedId === trip.id
 
-        // Build category totals — always show all standard categories
+        // Build category totals in SGD — always show all standard categories
+        const rate = parseFloat(trip.exchange_rate_to_sgd || 1)
         const byCategory = Object.fromEntries(STANDARD_TRIP_CATEGORIES.map(c => [c, 0]))
         for (const e of expenses) {
+          const amt = parseFloat(e.amount || 0)
+          const cur = e.currency || trip.currency
+          const sgd = cur === 'SGD' ? amt : cur === trip.currency ? amt * rate : 0
           if (byCategory[e.category] !== undefined) {
-            byCategory[e.category] += parseFloat(e.amount || 0)
+            byCategory[e.category] += sgd
           } else {
-            byCategory[e.category] = parseFloat(e.amount || 0)
+            byCategory[e.category] = sgd
           }
         }
 
@@ -354,7 +358,7 @@ export default function Overseas() {
                       <div key={cat} className="flex justify-between items-center py-0.5">
                         <span className={`text-xs ${amt > 0 ? 'text-text-secondary' : 'text-text-muted'}`}>{cat}</span>
                         <span className={`text-xs font-mono ${amt > 0 ? 'text-text-primary' : 'text-text-muted'}`}>
-                          {trip.currency} {amt.toFixed(2)}
+                          S$ {amt.toFixed(2)}
                         </span>
                       </div>
                     ))}
