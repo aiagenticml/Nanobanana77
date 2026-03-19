@@ -266,7 +266,7 @@ function EditTripRateForm({ trip, onSave, onCancel }) {
       <span className="text-xs text-text-muted">1 {trip.currency} =</span>
       <input
         type="number"
-        step="0.0001"
+        step="any"
         min="0"
         value={rate}
         onChange={e => setRate(e.target.value)}
