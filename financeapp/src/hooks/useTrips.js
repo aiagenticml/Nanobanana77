@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-export const STANDARD_TRIP_CATEGORIES = ['Hotel', 'Food', 'Flight', 'Activities', 'Insurance', 'Alcohol']
+export const STANDARD_TRIP_CATEGORIES = ['Hotel', 'Food', 'Flight', 'Activities', 'Insurance', 'Alcohol', 'Shopping']
 
 export function useTrips() {
   const [trips, setTrips] = useState([])
@@ -61,6 +61,12 @@ export function useTrips() {
     await fetch()
   }
 
+  async function updateTripExpense(id, data) {
+    const { error: err } = await supabase.from('trip_expenses').update(data).eq('id', id)
+    if (err) throw new Error(err.message)
+    await fetch()
+  }
+
   async function deleteTripExpense(id) {
     const { error: err } = await supabase.from('trip_expenses').delete().eq('id', id)
     if (err) throw new Error(err.message)
@@ -111,7 +117,7 @@ export function useTrips() {
   return {
     trips, tripExpenses, customCategories, allCategories, loading, error,
     addTrip, updateTrip, deleteTrip,
-    addTripExpense, deleteTripExpense, addCustomCategory,
+    addTripExpense, updateTripExpense, deleteTripExpense, addCustomCategory,
     expensesForTrip, totalForTrip, totalSGDForTrip, hasUnconvertedExpenses,
     refetch: fetch,
   }

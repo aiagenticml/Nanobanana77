@@ -179,6 +179,78 @@ function ExpenseForm({ tripCurrency, onSubmit, onCancel }) {
   )
 }
 
+function EditExpenseForm({ expense, tripCurrency, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    date: expense.date,
+    category: expense.category,
+    amount: String(expense.amount),
+    note: expense.note || '',
+    currency: expense.currency || tripCurrency,
+  })
+
+  function set(field, value) {
+    setForm(f => ({ ...f, [field]: value }))
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    const amt = parseFloat(form.amount)
+    if (!amt || amt <= 0) return
+    onSave({ date: form.date, category: form.category, amount: amt, note: form.note.trim() || null, currency: form.currency })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-bg-base rounded-lg p-3 space-y-2 border border-accent/30">
+      <div className="flex gap-2">
+        <select
+          value={form.category}
+          onChange={e => set('category', e.target.value)}
+          className="flex-1 bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+        >
+          {STANDARD_TRIP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <input
+          type="date"
+          value={form.date}
+          onChange={e => set('date', e.target.value)}
+          className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+        />
+      </div>
+      <div className="flex gap-2">
+        <select
+          value={form.currency}
+          onChange={e => set('currency', e.target.value)}
+          className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+        >
+          {Object.keys(TRIP_CURRENCIES).sort().map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="Amount"
+          value={form.amount}
+          onChange={e => set('amount', e.target.value)}
+          autoFocus
+          required
+          className="flex-1 bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+        />
+      </div>
+      <input
+        type="text"
+        placeholder="Note (optional)"
+        value={form.note}
+        onChange={e => set('note', e.target.value)}
+        className="w-full bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+      />
+      <div className="flex gap-2 justify-end">
+        <button type="button" onClick={onCancel} className="text-text-muted text-sm px-2">Cancel</button>
+        <button type="submit" className="bg-accent text-white rounded-lg px-3 py-1.5 text-sm hover:bg-accent-hover transition-colors">Save</button>
+      </div>
+    </form>
+  )
+}
+
 function EditTripRateForm({ trip, onSave, onCancel }) {
   const [rate, setRate] = useState(String(trip.exchange_rate_to_sgd))
 
@@ -212,13 +284,14 @@ export default function Overseas() {
   const {
     trips, loading, error,
     addTrip, updateTrip, deleteTrip,
-    addTripExpense, deleteTripExpense,
+    addTripExpense, updateTripExpense, deleteTripExpense,
     expensesForTrip, totalForTrip, totalSGDForTrip,
   } = useTrips()
 
   const [showTripForm, setShowTripForm] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
   const [addingExpenseFor, setAddingExpenseFor] = useState(null)
+  const [editingExpenseId, setEditingExpenseId] = useState(null)
   const [editingRateFor, setEditingRateFor] = useState(null)
   const [deletingTripId, setDeletingTripId] = useState(null)
 
@@ -233,6 +306,13 @@ export default function Overseas() {
     try {
       await addTripExpense(tripId, data)
       setAddingExpenseFor(null)
+    } catch { /* surfaced via hook state */ }
+  }
+
+  async function handleUpdateExpense(expenseId, data) {
+    try {
+      await updateTripExpense(expenseId, data)
+      setEditingExpenseId(null)
     } catch { /* surfaced via hook state */ }
   }
 
@@ -404,25 +484,46 @@ export default function Overseas() {
                     .slice()
                     .sort((a, b) => new Date(b.date) - new Date(a.date))
                     .map((entry) => (
-                    <div key={entry.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-text-muted bg-card-hover px-1.5 py-0.5 rounded">{entry.category}</span>
-                          {entry.note && <span className="text-xs text-text-secondary truncate">{entry.note}</span>}
+                    <div key={entry.id} className="py-2 border-b border-border last:border-0">
+                      {editingExpenseId === entry.id ? (
+                        <EditExpenseForm
+                          expense={entry}
+                          tripCurrency={trip.currency}
+                          onSave={(data) => handleUpdateExpense(entry.id, data)}
+                          onCancel={() => setEditingExpenseId(null)}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-text-muted bg-card-hover px-1.5 py-0.5 rounded">{entry.category}</span>
+                              {entry.note && <span className="text-xs text-text-secondary truncate">{entry.note}</span>}
+                            </div>
+                            <span className="text-xs text-text-muted">{entry.date}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="font-mono text-sm text-text-primary">{entry.currency || trip.currency} {parseFloat(entry.amount).toFixed(2)}</span>
+                            <button
+                              onClick={() => setEditingExpenseId(entry.id)}
+                              className="text-text-muted hover:text-accent transition-colors"
+                              title="Edit"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => deleteTripExpense(entry.id)}
+                              className="text-text-muted hover:text-danger transition-colors"
+                              title="Delete"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
-                        <span className="text-xs text-text-muted">{entry.date}</span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="font-mono text-sm text-text-primary">{entry.currency || trip.currency} {parseFloat(entry.amount).toFixed(2)}</span>
-                        <button
-                          onClick={() => deleteTripExpense(entry.id)}
-                          className="text-text-muted hover:text-danger transition-colors"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
