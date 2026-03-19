@@ -2,7 +2,7 @@ import { useState, useContext } from 'react'
 import { SettingsContext } from '../../App'
 import { CURRENCIES } from '../../lib/currencyUtils'
 
-const SUB_CATEGORIES = ['Streaming', 'Software', 'News', 'Music', 'Gaming', 'Cloud', 'Gym', 'Insurance', 'Other']
+const SUB_CATEGORIES = ['Streaming', 'Software', 'News', 'Music', 'Gaming', 'Cloud', 'Gym', 'Other']
 
 export default function SubscriptionForm({ onSubmit, onCancel }) {
   const { defaultCurrency } = useContext(SettingsContext)

@@ -73,6 +73,7 @@ function AccountForm({ onSubmit, onCancel }) {
 }
 
 function EntryForm({ onSubmit, onCancel }) {
+  const [entryType, setEntryType] = useState('deposit')
   const [amount, setAmount] = useState('')
   const [note, setNote] = useState('')
   const [entryDate, setEntryDate] = useState(todayStr())
@@ -81,11 +82,27 @@ function EntryForm({ onSubmit, onCancel }) {
     e.preventDefault()
     const amt = parseFloat(amount)
     if (!amt) return
-    onSubmit({ amount: amt, note: note.trim() || null, entry_date: entryDate })
+    onSubmit({ amount: amt, note: note.trim() || null, entry_date: entryDate, entry_type: entryType })
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-base rounded-lg p-3 space-y-2 mt-2">
+      <div className="flex gap-1 p-0.5 bg-input rounded-lg">
+        <button
+          type="button"
+          onClick={() => setEntryType('deposit')}
+          className={`flex-1 py-1 rounded-md text-xs font-medium transition-colors ${entryType === 'deposit' ? 'bg-positive text-white' : 'text-text-muted'}`}
+        >
+          Deposit
+        </button>
+        <button
+          type="button"
+          onClick={() => setEntryType('withdrawal')}
+          className={`flex-1 py-1 rounded-md text-xs font-medium transition-colors ${entryType === 'withdrawal' ? 'bg-danger text-white' : 'text-text-muted'}`}
+        >
+          Withdrawal
+        </button>
+      </div>
       <div className="flex gap-2">
         <input
           type="number"
@@ -114,7 +131,7 @@ function EntryForm({ onSubmit, onCancel }) {
         <button type="button" onClick={onCancel} className="text-text-muted text-sm px-2">Cancel</button>
         <button
           type="submit"
-          className="bg-accent text-white rounded-lg px-3 py-1.5 text-sm hover:bg-accent-hover transition-colors"
+          className={`text-white rounded-lg px-3 py-1.5 text-sm transition-colors ${entryType === 'withdrawal' ? 'bg-danger hover:bg-danger/80' : 'bg-accent hover:bg-accent-hover'}`}
         >
           Add
         </button>
@@ -167,12 +184,12 @@ export default function Accounts() {
   }
 
   return (
-    <div className="space-y-4 pb-36">
+    <div className="space-y-4 pb-44">
       {error && <ErrorBanner message={error} onDismiss={() => {}} />}
 
       {/* Net Worth Header */}
       <div className="bg-card border border-border rounded-xl p-4">
-        <p className="text-text-muted text-xs mb-1">Total Net Worth (deposits only)</p>
+        <p className="text-text-muted text-xs mb-1">Total Net Worth</p>
         <p className="text-3xl font-mono text-highlight">{formatAmount(totalNetWorth, defaultCurrency)}</p>
         <p className="text-text-muted text-xs mt-1">{accounts.length} account{accounts.length !== 1 ? 's' : ''}</p>
       </div>
@@ -218,13 +235,13 @@ export default function Accounts() {
             {isExpanded && (
               <div className="border-t border-border px-4 pb-4">
                 <div className="flex justify-between items-center pt-3 pb-2">
-                  <span className="text-text-muted text-xs">{accountEntries.length} deposit{accountEntries.length !== 1 ? 's' : ''}</span>
+                  <span className="text-text-muted text-xs">{accountEntries.length} entr{accountEntries.length !== 1 ? 'ies' : 'y'}</span>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setAddingEntryFor(addingEntryFor === account.id ? null : account.id)}
                       className="bg-accent text-white rounded-lg px-3 py-1 text-xs hover:bg-accent-hover transition-colors"
                     >
-                      + Add deposit
+                      + Add entry
                     </button>
                     <button
                       onClick={() => handleDeleteAccount(account.id)}
@@ -249,25 +266,30 @@ export default function Accounts() {
                   <p className="text-text-muted text-xs py-2">No deposits yet. Add your first one above.</p>
                 )}
 
-                {accountEntries.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div>
-                      <span className="font-mono text-sm text-highlight">{formatAmount(parseFloat(entry.amount), defaultCurrency)}</span>
-                      {entry.note && <span className="text-text-muted text-xs ml-2">{entry.note}</span>}
+                {accountEntries.map((entry) => {
+                  const isWithdrawal = entry.entry_type === 'withdrawal'
+                  return (
+                    <div key={entry.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                      <div>
+                        <span className={`font-mono text-sm ${isWithdrawal ? 'text-danger' : 'text-highlight'}`}>
+                          {isWithdrawal ? '−' : '+'}{formatAmount(parseFloat(entry.amount), defaultCurrency)}
+                        </span>
+                        {entry.note && <span className="text-text-muted text-xs ml-2">{entry.note}</span>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-text-muted text-xs">{entry.entry_date}</span>
+                        <button
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          className="text-text-muted hover:text-danger transition-colors"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-text-muted text-xs">{entry.entry_date}</span>
-                      <button
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        className="text-text-muted hover:text-danger transition-colors"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>

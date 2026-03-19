@@ -4,7 +4,7 @@ import { daysUntilDue } from '../../hooks/useSubscriptions'
 import EmptyState from '../shared/EmptyState'
 import Modal from '../shared/Modal'
 
-const SUB_CATEGORIES = ['Streaming', 'Software', 'News', 'Music', 'Gaming', 'Cloud', 'Gym', 'Insurance', 'Other']
+const SUB_CATEGORIES = ['Streaming', 'Software', 'News', 'Music', 'Gaming', 'Cloud', 'Gym', 'Other']
 
 function dueBadge(days) {
   if (days < 0) return { label: `${Math.abs(days)}d overdue`, cls: 'bg-danger/10 text-danger' }

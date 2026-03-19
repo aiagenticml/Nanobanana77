@@ -11,6 +11,9 @@ import Subscriptions from './pages/Subscriptions'
 import Vitamins from './pages/Vitamins'
 import Settings from './pages/Settings'
 import Accounts from './pages/Accounts'
+import Overseas from './pages/Overseas'
+import Trading from './pages/Trading'
+import Insurance from './pages/Insurance'
 
 export const SettingsContext = createContext({
   defaultCurrency: 'SGD',
@@ -24,8 +27,11 @@ const PAGE_TITLES = {
   budget: 'Monthly Budget',
   loans: 'Loan Tracker',
   subscriptions: 'Subscriptions',
+  insurance: 'Insurance',
   vitamins: 'Vitamins',
   accounts: 'Accounts',
+  overseas: 'Overseas Spending',
+  trading: 'Trading',
   settings: 'Settings',
 }
 
@@ -46,14 +52,17 @@ export default function App() {
     <SettingsContext.Provider value={{ defaultCurrency, setDefaultCurrency, showToast }}>
       <div className="min-h-screen flex flex-col max-w-lg mx-auto">
         <TopBar title={PAGE_TITLES[tab]} />
-        <main className="flex-1 overflow-y-auto px-4 py-4 pb-32">
+        <main className="flex-1 overflow-y-auto px-4 py-4 pb-44">
           {tab === 'dashboard' && <Dashboard />}
           {tab === 'expenses' && <Expenses />}
           {tab === 'budget' && <Budget />}
           {tab === 'loans' && <Loans />}
           {tab === 'subscriptions' && <Subscriptions />}
+          {tab === 'insurance' && <Insurance />}
           {tab === 'vitamins' && <Vitamins />}
           {tab === 'accounts' && <Accounts />}
+          {tab === 'overseas' && <Overseas />}
+          {tab === 'trading' && <Trading />}
           {tab === 'settings' && <Settings />}
         </main>
         <BottomNav active={tab} onChange={setTab} />

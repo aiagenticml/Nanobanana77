@@ -29,7 +29,7 @@ export default function Budget() {
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const [month, setMonth] = useState(currentMonth)
 
-  const { budget, items, loading, error, createBudget, updateAllowance, addItem, updateItem, deleteItem } = useBudgets(month)
+  const { budget, items, loading, error, createBudget, updateAllowance, addItem, updateItem, deleteItem, copyFromPreviousMonth } = useBudgets(month)
   const { categoryNames } = useCategories()
   const { totalByCategory } = useExpenses({ month })
 
@@ -39,6 +39,7 @@ export default function Budget() {
   const [editAllowanceValue, setEditAllowanceValue] = useState('')
   const [editingItemId, setEditingItemId] = useState(null)
   const [editItemData, setEditItemData] = useState({})
+  const [copying, setCopying] = useState(false)
 
   const spendByCategory = totalByCategory(defaultCurrency)
 
@@ -50,6 +51,8 @@ export default function Budget() {
     return sum
   }, 0)
   const totalAllowance = parseFloat(budget?.total_allowance || 0)
+  const allowedExpenditure = Math.max(0, totalAllowance - totalAllocated)
+  const totalMonthSpending = Object.values(spendByCategory).reduce((sum, v) => sum + v, 0)
 
   const allocatedRatio = totalAllowance > 0 ? totalAllocated / totalAllowance : 0
   const spentRatio = totalAllocated > 0 ? totalSpent / totalAllocated : 0
@@ -118,6 +121,14 @@ export default function Budget() {
     } catch { /* error surfaced via hook state */ }
   }
 
+  async function handleCopyPrevMonth() {
+    setCopying(true)
+    try {
+      await copyFromPreviousMonth()
+    } catch { /* surfaced via hook state */ }
+    setCopying(false)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -127,7 +138,7 @@ export default function Budget() {
   }
 
   return (
-    <div className="space-y-4 pb-36">
+    <div className="space-y-4 pb-52">
       {error && <ErrorBanner message={error} onDismiss={() => {}} />}
 
       {/* Month selector */}
@@ -208,6 +219,16 @@ export default function Budget() {
         <EmptyState icon="📊" message="No budget items yet" sub="Add categories to track your spending" />
       )}
 
+      {budget && items.length === 0 && !showForm && (
+        <button
+          onClick={handleCopyPrevMonth}
+          disabled={copying}
+          className="w-full bg-card border border-border border-dashed rounded-xl p-3 text-text-muted hover:text-text-primary hover:border-border-focus transition-colors text-sm flex items-center justify-center gap-1 disabled:opacity-50"
+        >
+          {copying ? 'Copying...' : '↩ Copy from previous month'}
+        </button>
+      )}
+
       {budget && items.length > 0 && (
         <div className="space-y-2">
           {items.map((item) => {
@@ -274,6 +295,19 @@ export default function Budget() {
         </div>
       )}
 
+      {/* Allowed Expenditure card */}
+      {budget && (
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-text-muted">Allowed Expenditure</p>
+            <p className="text-xs text-text-muted mt-0.5">Total allowance minus all allocations</p>
+          </div>
+          <span className={`font-mono text-lg font-medium ${allowedExpenditure <= 0 ? 'text-danger' : 'text-positive'}`}>
+            {formatAmount(allowedExpenditure, defaultCurrency)}
+          </span>
+        </div>
+      )}
+
       {/* Add item form / button */}
       {budget && (
         showForm ? (
@@ -293,19 +327,19 @@ export default function Budget() {
       )}
 
       {/* Summary footer */}
-      {budget && items.length > 0 && (
-        <div className="fixed bottom-28 left-0 right-0 z-30 bg-card border-t border-border">
+      {budget && (
+        <div className="fixed bottom-40 left-0 right-0 z-30 bg-card border-t border-border">
           <div className="max-w-lg mx-auto px-4 py-3 flex justify-between text-sm">
             <div>
-              <span className="text-text-muted">Allocated: </span>
-              <span className={`font-mono ${getAllocatedColor()}`}>
-                {formatAmount(totalAllocated, defaultCurrency)} / {formatAmount(totalAllowance, defaultCurrency)}
+              <span className="text-text-muted">Spending: </span>
+              <span className={`font-mono ${totalMonthSpending > allowedExpenditure ? 'text-danger' : totalMonthSpending > allowedExpenditure * 0.8 ? 'text-warning' : 'text-positive'}`}>
+                {formatAmount(totalMonthSpending, defaultCurrency)}
               </span>
             </div>
             <div>
-              <span className="text-text-muted">Spent: </span>
-              <span className={`font-mono ${getSpentColor()}`}>
-                {formatAmount(totalSpent, defaultCurrency)} / {formatAmount(totalAllocated, defaultCurrency)}
+              <span className="text-text-muted">Allowed: </span>
+              <span className={`font-mono ${allowedExpenditure <= 0 ? 'text-danger' : 'text-positive'}`}>
+                {formatAmount(allowedExpenditure, defaultCurrency)}
               </span>
             </div>
           </div>
