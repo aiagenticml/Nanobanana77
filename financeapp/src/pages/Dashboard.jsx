@@ -55,7 +55,7 @@ export default function Dashboard() {
   const { subscriptions, loading: subLoading } = useSubscriptions()
   const { vitamins, loading: vitLoading } = useVitamins()
   const currentMonth = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`
-  const { budget, loading: budgetLoading } = useBudgets(currentMonth)
+  const { budget, items: budgetItems, loading: budgetLoading } = useBudgets(currentMonth)
   const { colorMap } = useCategories()
 
   const loading = expLoading || loanLoading || subLoading || vitLoading || budgetLoading
@@ -86,8 +86,9 @@ export default function Dashboard() {
   }, [upcomingPayments])
 
   // Budget widget helpers
+  const totalAllocated = budgetItems.reduce((sum, it) => sum + parseFloat(it.allocated_amount || 0), 0)
   const budgetSpent = periodTotal
-  const budgetTotal = budget ? budget.total_allowance : 0
+  const budgetTotal = budget ? Math.max(0, parseFloat(budget.total_allowance) - totalAllocated) : 0
   const budgetRatio = budgetTotal > 0 ? budgetSpent / budgetTotal : 0
   const budgetPct = Math.round(budgetRatio * 100)
   const budgetBarColor = budgetRatio > 1 ? 'bg-danger' : budgetRatio >= 0.8 ? 'bg-warning' : 'bg-positive'
