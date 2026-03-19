@@ -68,9 +68,8 @@ function TripForm({ onSubmit, onCancel }) {
         <div className="flex-1">
           <label className="block text-xs text-text-muted mb-1">Rate to SGD (1 {form.currency} = ? SGD)</label>
           <input
-            type="number"
-            step="any"
-            min="0"
+            type="text"
+            inputMode="decimal"
             placeholder="e.g. 0.0089"
             value={form.exchange_rate_to_sgd}
             onChange={e => set('exchange_rate_to_sgd', e.target.value)}
@@ -265,9 +264,8 @@ function EditTripRateForm({ trip, onSave, onCancel }) {
     <form onSubmit={handleSubmit} className="flex items-center gap-2 mt-2">
       <span className="text-xs text-text-muted">1 {trip.currency} =</span>
       <input
-        type="number"
-        step="any"
-        min="0"
+        type="text"
+        inputMode="decimal"
         value={rate}
         onChange={e => setRate(e.target.value)}
         autoFocus
