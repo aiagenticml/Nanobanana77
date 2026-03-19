@@ -395,8 +395,7 @@ export default function Overseas() {
               </div>
               <div className="flex items-center gap-3 text-right">
                 <div>
-                  <p className="font-mono text-text-primary text-sm">{trip.currency} {total.toFixed(2)}</p>
-                  <p className="font-mono text-highlight text-xs">≈ S$ {totalSGD.toFixed(2)}</p>
+                  <p className="font-mono text-highlight text-sm">S$ {totalSGD.toFixed(2)}</p>
                 </div>
                 <svg className={`w-4 h-4 text-text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -502,7 +501,16 @@ export default function Overseas() {
                             <span className="text-xs text-text-muted">{entry.date}</span>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="font-mono text-sm text-text-primary">{entry.currency || trip.currency} {parseFloat(entry.amount).toFixed(2)}</span>
+                            <div className="text-right">
+                              <span className="font-mono text-sm text-text-primary">{entry.currency || trip.currency} {parseFloat(entry.amount).toFixed(2)}</span>
+                              {(() => {
+                                const cur = entry.currency || trip.currency
+                                if (cur === 'SGD') return null
+                                const amt = parseFloat(entry.amount || 0)
+                                const sgd = cur === trip.currency ? amt * rate : 0
+                                return sgd > 0 ? <p className="font-mono text-xs text-text-muted">≈ S$ {sgd.toFixed(2)}</p> : null
+                              })()}
+                            </div>
                             <button
                               onClick={() => setEditingExpenseId(entry.id)}
                               className="text-text-muted hover:text-accent transition-colors"
