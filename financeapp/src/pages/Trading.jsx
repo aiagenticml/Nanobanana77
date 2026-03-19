@@ -16,7 +16,7 @@ function EntryForm({ type, onSubmit, onCancel }) {
     e.preventDefault()
     const amt = parseFloat(amount)
     if (!amt || amt <= 0) return
-    onSubmit({ type, amount: amt, description: description.trim() || null, entry_date: entryDate })
+    onSubmit({ entry_type: type, amount: amt, description: description.trim() || null, entry_date: entryDate })
   }
 
   const isEarning = type === 'earning'
@@ -143,7 +143,7 @@ export default function Trading() {
       {entries.length > 0 && (
         <div className="space-y-2">
           {entries.map((entry) => {
-            const isEarning = entry.type === 'earning'
+            const isEarning = entry.entry_type === 'earning'
             return (
               <div key={entry.id} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
                 <div className={`w-1.5 h-10 rounded-full flex-shrink-0 ${isEarning ? 'bg-positive' : 'bg-danger'}`} />

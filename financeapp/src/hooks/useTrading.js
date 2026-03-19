@@ -37,8 +37,8 @@ export function useTrading() {
     await fetch()
   }
 
-  const totalEarnings = entries.filter(e => e.type === 'earning').reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
-  const totalExpenses = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
+  const totalEarnings = entries.filter(e => e.entry_type === 'earning').reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
+  const totalExpenses = entries.filter(e => e.entry_type === 'expense').reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
   const totalNet = totalEarnings - totalExpenses
 
   return {
