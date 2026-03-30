@@ -1,0 +1,54 @@
+{
+  "generated_at_utc": "2026-03-30T15:41:20.202427Z",
+  "data_source": "synthetic sample data (no network)",
+  "universe": "S&P 500 sample",
+  "period_analyzed": "last 60 calendar days, ranked by most recent trading-day gain",
+  "live_data": false,
+  "top_5_gainers": [
+    {
+      "ticker": "CRWD",
+      "current_price_usd": 261.6404,
+      "previous_close_usd": 259.0169,
+      "day_change_pct": 1.0129,
+      "rsi_14": 52.53,
+      "ma_20": 253.4982,
+      "signal": "NEUTRAL"
+    },
+    {
+      "ticker": "META",
+      "current_price_usd": 495.0258,
+      "previous_close_usd": 491.1602,
+      "day_change_pct": 0.7871,
+      "rsi_14": 48.57,
+      "ma_20": 496.1399,
+      "signal": "NEUTRAL"
+    },
+    {
+      "ticker": "TSLA",
+      "current_price_usd": 208.5168,
+      "previous_close_usd": 207.8846,
+      "day_change_pct": 0.3041,
+      "rsi_14": 49.23,
+      "ma_20": 208.0197,
+      "signal": "NEUTRAL"
+    },
+    {
+      "ticker": "NVDA",
+      "current_price_usd": 858.509,
+      "previous_close_usd": 862.1373,
+      "day_change_pct": -0.4208,
+      "rsi_14": 44.07,
+      "ma_20": 865.0411,
+      "signal": "NEUTRAL"
+    },
+    {
+      "ticker": "AMD",
+      "current_price_usd": 181.3961,
+      "previous_close_usd": 183.4259,
+      "day_change_pct": -1.1066,
+      "rsi_14": 63.26,
+      "ma_20": 173.6508,
+      "signal": "NEUTRAL"
+    }
+  ]
+}
