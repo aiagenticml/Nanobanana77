@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-export const STANDARD_TRIP_CATEGORIES = ['Hotel', 'Food', 'Flight', 'Activities', 'Insurance', 'Alcohol', 'Shopping']
+export const STANDARD_TRIP_CATEGORIES = ['Hotel', 'Food', 'Flight', 'Activities', 'Insurance', 'Alcohol', 'Shopping', 'Domestic Travel']
 
 export function useTrips() {
   const [trips, setTrips] = useState([])
