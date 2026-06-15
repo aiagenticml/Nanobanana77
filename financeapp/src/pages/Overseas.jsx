@@ -126,6 +126,8 @@ function ExpenseForm({ tripCurrency, onSubmit, onCancel }) {
     onSubmit({ date: form.date, category: form.category, amount: amt, note: form.note.trim() || null, currency: form.currency })
   }
 
+  const currencyOptions = [...new Set([tripCurrency, 'SGD', 'USD', 'EUR'])]
+
   return (
     <form onSubmit={handleSubmit} className="bg-bg-base rounded-lg p-3 space-y-2 mt-2 border border-border/50">
       <div className="flex gap-2">
@@ -149,7 +151,7 @@ function ExpenseForm({ tripCurrency, onSubmit, onCancel }) {
           onChange={e => set('currency', e.target.value)}
           className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
         >
-          {Object.keys(TRIP_CURRENCIES).sort().map(c => <option key={c} value={c}>{c}</option>)}
+          {currencyOptions.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input
           type="number"
@@ -198,6 +200,8 @@ function EditExpenseForm({ expense, tripCurrency, onSave, onCancel }) {
     onSave({ date: form.date, category: form.category, amount: amt, note: form.note.trim() || null, currency: form.currency })
   }
 
+  const currencyOptions = [...new Set([tripCurrency, 'SGD', 'USD', 'EUR'])]
+
   return (
     <form onSubmit={handleSubmit} className="bg-bg-base rounded-lg p-3 space-y-2 border border-accent/30">
       <div className="flex gap-2">
@@ -221,7 +225,7 @@ function EditExpenseForm({ expense, tripCurrency, onSave, onCancel }) {
           onChange={e => set('currency', e.target.value)}
           className="bg-input border border-border text-text-primary rounded-lg px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
         >
-          {Object.keys(TRIP_CURRENCIES).sort().map(c => <option key={c} value={c}>{c}</option>)}
+          {currencyOptions.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input
           type="number"
