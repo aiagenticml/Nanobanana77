@@ -1,0 +1,197 @@
+politician,party,chamber,committee,ticker,action,trade_date,disclosure_date,amount_min,amount_max
+Nancy Pelosi,D,House,Rules,AAPL,Purchase,2020-01-24,2020-02-07,500001,1000000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2020-02-10,2020-02-28,250001,500000
+Nancy Pelosi,D,House,Rules,GOOGL,Purchase,2020-04-06,2020-04-20,250001,500000
+Nancy Pelosi,D,House,Rules,NVDA,Purchase,2020-06-18,2020-07-02,500001,1000000
+Nancy Pelosi,D,House,Rules,AAPL,Purchase,2020-10-22,2020-11-03,500001,1000000
+Nancy Pelosi,D,House,Rules,TSLA,Purchase,2021-01-07,2021-01-21,500001,1000000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2021-03-19,2021-04-09,500001,1000000
+Nancy Pelosi,D,House,Rules,GOOGL,Purchase,2021-07-26,2021-08-09,500001,1000000
+Nancy Pelosi,D,House,Rules,NVDA,Purchase,2021-10-22,2021-11-04,250001,500000
+Nancy Pelosi,D,House,Rules,AAPL,Purchase,2021-12-17,2021-12-30,250001,500000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2022-01-21,2022-02-04,250001,500000
+Nancy Pelosi,D,House,Rules,GOOGL,Sale,2022-06-17,2022-07-01,250001,500000
+Nancy Pelosi,D,House,Rules,NVDA,Sale,2022-07-26,2022-08-09,250001,500000
+Nancy Pelosi,D,House,Rules,AAPL,Purchase,2022-09-16,2022-09-30,250001,500000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2022-11-18,2022-12-02,250001,500000
+Nancy Pelosi,D,House,Rules,NVDA,Purchase,2023-06-16,2023-07-14,250001,500000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2023-06-16,2023-07-14,500001,1000000
+Nancy Pelosi,D,House,Rules,AAPL,Purchase,2024-01-17,2024-02-16,250001,500000
+Nancy Pelosi,D,House,Rules,PANW,Purchase,2024-01-17,2024-02-16,100001,250000
+Nancy Pelosi,D,House,Rules,GOOGL,Purchase,2024-03-14,2024-04-12,250001,500000
+Nancy Pelosi,D,House,Rules,NVDA,Purchase,2024-06-20,2024-07-19,500001,1000000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2024-09-05,2024-10-04,250001,500000
+Nancy Pelosi,D,House,Rules,AAPL,Purchase,2024-11-08,2024-12-07,500001,1000000
+Nancy Pelosi,D,House,Rules,NVDA,Purchase,2025-01-10,2025-02-08,500001,1000000
+Nancy Pelosi,D,House,Rules,GOOGL,Purchase,2025-03-14,2025-04-12,250001,500000
+Nancy Pelosi,D,House,Rules,MSFT,Purchase,2025-06-18,2025-07-17,250001,500000
+Michael McCaul,R,House,Armed Services,LMT,Purchase,2020-02-14,2020-03-14,50001,100000
+Michael McCaul,R,House,Armed Services,RTX,Purchase,2020-04-20,2020-05-05,50001,100000
+Michael McCaul,R,House,Armed Services,NOC,Purchase,2020-07-15,2020-08-05,50001,100000
+Michael McCaul,R,House,Armed Services,GD,Purchase,2020-09-22,2020-10-06,50001,100000
+Michael McCaul,R,House,Armed Services,LMT,Purchase,2021-02-10,2021-02-25,50001,100000
+Michael McCaul,R,House,Armed Services,BA,Purchase,2021-05-12,2021-06-01,50001,100000
+Michael McCaul,R,House,Armed Services,RTX,Purchase,2021-08-16,2021-09-05,100001,250000
+Michael McCaul,R,House,Armed Services,NOC,Purchase,2021-11-09,2021-11-29,100001,250000
+Michael McCaul,R,House,Armed Services,LMT,Purchase,2022-01-28,2022-02-17,100001,250000
+Michael McCaul,R,House,Armed Services,GD,Purchase,2022-03-14,2022-04-03,100001,250000
+Michael McCaul,R,House,Armed Services,RTX,Purchase,2022-06-09,2022-06-29,100001,250000
+Michael McCaul,R,House,Armed Services,LMT,Purchase,2023-03-10,2023-04-05,50001,100000
+Michael McCaul,R,House,Armed Services,RTX,Purchase,2023-05-22,2023-06-15,50001,100000
+Michael McCaul,R,House,Armed Services,NOC,Purchase,2023-08-14,2023-09-07,100001,250000
+Michael McCaul,R,House,Armed Services,GD,Purchase,2023-11-06,2023-11-30,100001,250000
+Michael McCaul,R,House,Armed Services,LMT,Purchase,2024-02-20,2024-03-15,100001,250000
+Michael McCaul,R,House,Armed Services,BA,Purchase,2024-05-13,2024-06-06,50001,100000
+Michael McCaul,R,House,Armed Services,RTX,Purchase,2024-08-07,2024-08-31,100001,250000
+Michael McCaul,R,House,Armed Services,NOC,Purchase,2024-10-22,2024-11-15,100001,250000
+Michael McCaul,R,House,Armed Services,LMT,Purchase,2025-01-14,2025-02-07,100001,250000
+Michael McCaul,R,House,Armed Services,GD,Purchase,2025-04-08,2025-05-02,100001,250000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2020-03-18,2020-04-07,15001,50000
+Ro Khanna,D,House,Armed Services,AAPL,Purchase,2020-05-20,2020-06-09,15001,50000
+Ro Khanna,D,House,Armed Services,MSFT,Purchase,2020-08-14,2020-09-03,15001,50000
+Ro Khanna,D,House,Armed Services,GOOGL,Purchase,2020-11-09,2020-11-29,15001,50000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2021-03-22,2021-04-11,15001,50000
+Ro Khanna,D,House,Armed Services,TSLA,Purchase,2021-06-07,2021-06-27,15001,50000
+Ro Khanna,D,House,Armed Services,AAPL,Purchase,2021-09-13,2021-10-03,15001,50000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2022-02-07,2022-02-27,15001,50000
+Ro Khanna,D,House,Armed Services,MSFT,Purchase,2022-05-16,2022-06-05,15001,50000
+Ro Khanna,D,House,Armed Services,AAPL,Purchase,2022-08-09,2022-08-29,15001,50000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2023-01-23,2023-02-12,15001,50000
+Ro Khanna,D,House,Armed Services,MSFT,Purchase,2023-04-17,2023-05-07,15001,50000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2023-09-05,2023-09-28,15001,50000
+Ro Khanna,D,House,Armed Services,AAPL,Purchase,2023-12-11,2024-01-04,15001,50000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2024-03-07,2024-03-30,15001,50000
+Ro Khanna,D,House,Armed Services,MSFT,Purchase,2024-07-01,2024-07-24,15001,50000
+Ro Khanna,D,House,Armed Services,GOOGL,Purchase,2024-10-08,2024-10-31,15001,50000
+Ro Khanna,D,House,Armed Services,NVDA,Purchase,2025-02-10,2025-03-05,50001,100000
+Ro Khanna,D,House,Armed Services,AAPL,Purchase,2025-05-12,2025-06-05,15001,50000
+Dan Crenshaw,R,House,Intelligence,NVDA,Purchase,2020-06-15,2020-07-05,15001,50000
+Dan Crenshaw,R,House,Intelligence,MSFT,Purchase,2020-09-14,2020-10-04,15001,50000
+Dan Crenshaw,R,House,Intelligence,AAPL,Purchase,2021-01-11,2021-01-31,15001,50000
+Dan Crenshaw,R,House,Intelligence,GOOGL,Purchase,2021-04-19,2021-05-09,15001,50000
+Dan Crenshaw,R,House,Intelligence,NVDA,Purchase,2021-08-09,2021-08-29,15001,50000
+Dan Crenshaw,R,House,Intelligence,MSFT,Purchase,2022-01-18,2022-02-07,15001,50000
+Dan Crenshaw,R,House,Intelligence,AAPL,Purchase,2022-05-10,2022-05-30,15001,50000
+Dan Crenshaw,R,House,Intelligence,NVDA,Purchase,2022-09-14,2022-10-04,15001,50000
+Dan Crenshaw,R,House,Intelligence,MSFT,Purchase,2023-02-13,2023-03-05,15001,50000
+Dan Crenshaw,R,House,Intelligence,NVDA,Purchase,2023-07-10,2023-07-30,15001,50000
+Dan Crenshaw,R,House,Intelligence,AAPL,Purchase,2023-11-06,2023-11-26,15001,50000
+Dan Crenshaw,R,House,Intelligence,NVDA,Purchase,2024-04-08,2024-04-28,15001,50000
+Dan Crenshaw,R,House,Intelligence,MSFT,Purchase,2024-08-12,2024-09-01,15001,50000
+Dan Crenshaw,R,House,Intelligence,GOOGL,Purchase,2025-01-20,2025-02-09,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2020-04-27,2020-05-17,15001,50000
+Mark Green,R,House,Homeland Security,MSFT,Purchase,2020-07-13,2020-08-02,15001,50000
+Mark Green,R,House,Homeland Security,AMZN,Purchase,2020-10-05,2020-10-25,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2021-02-22,2021-03-14,15001,50000
+Mark Green,R,House,Homeland Security,NVDA,Purchase,2021-05-17,2021-06-06,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2021-09-20,2021-10-10,15001,50000
+Mark Green,R,House,Homeland Security,MSFT,Purchase,2022-02-14,2022-03-06,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2022-06-06,2022-06-26,15001,50000
+Mark Green,R,House,Homeland Security,AMZN,Purchase,2022-10-17,2022-11-06,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2023-03-06,2023-03-26,15001,50000
+Mark Green,R,House,Homeland Security,NVDA,Purchase,2023-06-26,2023-07-16,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2023-10-09,2023-10-29,15001,50000
+Mark Green,R,House,Homeland Security,MSFT,Purchase,2024-01-29,2024-02-18,15001,50000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2024-05-20,2024-06-09,15001,50000
+Mark Green,R,House,Homeland Security,NVDA,Purchase,2024-09-09,2024-09-29,50001,100000
+Mark Green,R,House,Homeland Security,PLTR,Purchase,2025-02-03,2025-02-23,50001,100000
+Tommy Tuberville,R,Senate,Armed Services,LMT,Purchase,2020-05-11,2020-05-31,50001,100000
+Tommy Tuberville,R,Senate,Armed Services,RTX,Purchase,2020-09-14,2020-10-04,50001,100000
+Tommy Tuberville,R,Senate,Armed Services,NOC,Purchase,2021-01-19,2021-02-08,50001,100000
+Tommy Tuberville,R,Senate,Armed Services,GD,Purchase,2021-04-12,2021-05-02,50001,100000
+Tommy Tuberville,R,Senate,Armed Services,LMT,Purchase,2021-07-19,2021-08-08,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,BA,Purchase,2021-10-11,2021-10-31,50001,100000
+Tommy Tuberville,R,Senate,Armed Services,RTX,Purchase,2022-02-28,2022-03-20,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,LMT,Purchase,2022-05-23,2022-06-12,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,NOC,Purchase,2022-08-15,2022-09-04,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,GD,Purchase,2022-11-07,2022-11-27,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,LMT,Purchase,2023-02-06,2023-02-26,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,RTX,Purchase,2023-05-08,2023-05-28,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,NOC,Purchase,2023-08-07,2023-08-27,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,LMT,Purchase,2023-11-13,2023-12-03,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,GD,Purchase,2024-02-12,2024-03-03,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,RTX,Purchase,2024-05-20,2024-06-09,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,LMT,Purchase,2024-08-19,2024-09-08,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,NOC,Purchase,2024-11-18,2024-12-08,100001,250000
+Tommy Tuberville,R,Senate,Armed Services,GD,Purchase,2025-03-17,2025-04-06,100001,250000
+David Perdue,R,Senate,Banking,JPM,Purchase,2020-01-27,2020-02-16,50001,100000
+David Perdue,R,Senate,Banking,GS,Purchase,2020-02-18,2020-03-09,50001,100000
+David Perdue,R,Senate,Banking,BAC,Purchase,2020-03-12,2020-04-01,50001,100000
+David Perdue,R,Senate,Banking,JPM,Purchase,2020-10-14,2020-11-03,100001,250000
+David Perdue,R,Senate,Banking,V,Purchase,2020-12-07,2020-12-27,50001,100000
+Mark Warner,D,Senate,Finance,JPM,Purchase,2020-04-01,2020-04-21,250001,500000
+Mark Warner,D,Senate,Finance,BAC,Purchase,2020-07-06,2020-07-26,250001,500000
+Mark Warner,D,Senate,Finance,V,Purchase,2021-02-08,2021-02-28,250001,500000
+Mark Warner,D,Senate,Finance,MA,Purchase,2021-05-17,2021-06-06,250001,500000
+Mark Warner,D,Senate,Finance,JPM,Purchase,2021-08-16,2021-09-05,250001,500000
+Mark Warner,D,Senate,Finance,GS,Purchase,2021-11-08,2021-11-28,250001,500000
+Mark Warner,D,Senate,Finance,BAC,Purchase,2022-03-14,2022-04-03,100001,250000
+Mark Warner,D,Senate,Finance,V,Purchase,2022-07-11,2022-07-31,250001,500000
+Mark Warner,D,Senate,Finance,JPM,Purchase,2022-10-24,2022-11-13,250001,500000
+Mark Warner,D,Senate,Finance,MA,Purchase,2023-01-23,2023-02-12,250001,500000
+Mark Warner,D,Senate,Finance,JPM,Purchase,2023-04-10,2023-04-30,250001,500000
+Mark Warner,D,Senate,Finance,GS,Purchase,2023-07-17,2023-08-06,100001,250000
+Mark Warner,D,Senate,Finance,BAC,Purchase,2023-10-23,2023-11-12,250001,500000
+Mark Warner,D,Senate,Finance,V,Purchase,2024-01-08,2024-01-28,250001,500000
+Mark Warner,D,Senate,Finance,JPM,Purchase,2024-04-22,2024-05-12,250001,500000
+Mark Warner,D,Senate,Finance,MA,Purchase,2024-08-12,2024-09-01,250001,500000
+Mark Warner,D,Senate,Finance,GS,Purchase,2024-11-04,2024-11-24,250001,500000
+Mark Warner,D,Senate,Finance,JPM,Purchase,2025-02-17,2025-03-09,250001,500000
+Jefferson Shreve,R,House,Financial Services,JPM,Purchase,2023-01-17,2023-02-06,50001,100000
+Jefferson Shreve,R,House,Financial Services,V,Purchase,2023-03-13,2023-04-02,100001,250000
+Jefferson Shreve,R,House,Financial Services,BAC,Purchase,2023-05-22,2023-06-11,50001,100000
+Jefferson Shreve,R,House,Financial Services,GS,Purchase,2023-08-07,2023-08-27,100001,250000
+Jefferson Shreve,R,House,Financial Services,JPM,Purchase,2023-10-16,2023-11-05,250001,500000
+Jefferson Shreve,R,House,Financial Services,MA,Purchase,2023-12-11,2023-12-31,100001,250000
+Jefferson Shreve,R,House,Financial Services,V,Purchase,2024-02-20,2024-03-11,100001,250000
+Jefferson Shreve,R,House,Financial Services,JPM,Purchase,2024-04-08,2024-04-28,250001,500000
+Jefferson Shreve,R,House,Financial Services,GS,Purchase,2024-06-17,2024-07-07,100001,250000
+Jefferson Shreve,R,House,Financial Services,BAC,Purchase,2024-08-26,2024-09-15,100001,250000
+Jefferson Shreve,R,House,Financial Services,V,Purchase,2024-10-14,2024-11-03,100001,250000
+Jefferson Shreve,R,House,Financial Services,JPM,Purchase,2024-12-09,2024-12-29,250001,500000
+Jefferson Shreve,R,House,Financial Services,MA,Purchase,2025-02-18,2025-03-10,100001,250000
+Jefferson Shreve,R,House,Financial Services,GS,Purchase,2025-04-28,2025-05-18,100001,250000
+Cleo Fields,D,Senate,Commerce,AMZN,Purchase,2023-02-13,2023-03-05,50001,100000
+Cleo Fields,D,Senate,Commerce,MSFT,Purchase,2023-04-17,2023-05-07,50001,100000
+Cleo Fields,D,Senate,Commerce,GOOGL,Purchase,2023-06-26,2023-07-16,50001,100000
+Cleo Fields,D,Senate,Commerce,AMZN,Purchase,2023-09-11,2023-10-01,100001,250000
+Cleo Fields,D,Senate,Commerce,MSFT,Purchase,2023-11-20,2023-12-10,50001,100000
+Cleo Fields,D,Senate,Commerce,GOOGL,Purchase,2024-01-29,2024-02-18,100001,250000
+Cleo Fields,D,Senate,Commerce,AMZN,Purchase,2024-04-08,2024-04-28,100001,250000
+Cleo Fields,D,Senate,Commerce,NVDA,Purchase,2024-06-10,2024-06-30,100001,250000
+Cleo Fields,D,Senate,Commerce,MSFT,Purchase,2024-08-19,2024-09-08,50001,100000
+Cleo Fields,D,Senate,Commerce,AMZN,Purchase,2024-10-28,2024-11-17,100001,250000
+Cleo Fields,D,Senate,Commerce,GOOGL,Purchase,2025-01-06,2025-01-26,100001,250000
+Cleo Fields,D,Senate,Commerce,NVDA,Purchase,2025-03-17,2025-04-06,100001,250000
+Marjorie Taylor Greene,R,House,Oversight,NVDA,Purchase,2021-11-15,2021-11-29,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,AAPL,Purchase,2022-01-10,2022-01-30,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,MSFT,Purchase,2022-04-11,2022-05-01,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,GOOGL,Purchase,2022-07-05,2022-07-25,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,NVDA,Purchase,2022-10-17,2022-11-06,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,AAPL,Purchase,2023-01-23,2023-02-12,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,MSFT,Purchase,2023-05-22,2023-06-11,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,NVDA,Purchase,2023-09-11,2023-10-01,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,AAPL,Purchase,2024-01-08,2024-01-28,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,NVDA,Purchase,2024-05-06,2024-05-26,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,MSFT,Purchase,2024-09-16,2024-10-06,15001,50000
+Marjorie Taylor Greene,R,House,Oversight,GOOGL,Purchase,2025-01-13,2025-02-02,15001,50000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2020-02-18,2020-03-09,50001,100000
+Josh Gottheimer,D,House,Financial Services,V,Purchase,2020-05-11,2020-05-31,50001,100000
+Josh Gottheimer,D,House,Financial Services,BAC,Purchase,2020-08-10,2020-08-30,50001,100000
+Josh Gottheimer,D,House,Financial Services,MA,Purchase,2020-11-09,2020-11-29,50001,100000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2021-02-16,2021-03-08,100001,250000
+Josh Gottheimer,D,House,Financial Services,GS,Purchase,2021-05-17,2021-06-06,100001,250000
+Josh Gottheimer,D,House,Financial Services,V,Purchase,2021-08-23,2021-09-12,100001,250000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2021-12-06,2021-12-26,100001,250000
+Josh Gottheimer,D,House,Financial Services,BAC,Purchase,2022-04-11,2022-05-01,50001,100000
+Josh Gottheimer,D,House,Financial Services,V,Purchase,2022-07-25,2022-08-14,100001,250000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2022-11-14,2022-12-04,100001,250000
+Josh Gottheimer,D,House,Financial Services,MA,Purchase,2023-03-13,2023-04-02,100001,250000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2023-06-12,2023-07-02,250001,500000
+Josh Gottheimer,D,House,Financial Services,GS,Purchase,2023-09-18,2023-10-08,100001,250000
+Josh Gottheimer,D,House,Financial Services,V,Purchase,2023-12-11,2023-12-31,100001,250000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2024-03-18,2024-04-07,250001,500000
+Josh Gottheimer,D,House,Financial Services,BAC,Purchase,2024-06-10,2024-06-30,100001,250000
+Josh Gottheimer,D,House,Financial Services,MA,Purchase,2024-09-23,2024-10-13,100001,250000
+Josh Gottheimer,D,House,Financial Services,JPM,Purchase,2024-12-16,2025-01-05,250001,500000
+Josh Gottheimer,D,House,Financial Services,GS,Purchase,2025-04-07,2025-04-27,100001,250000
