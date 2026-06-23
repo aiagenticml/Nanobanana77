@@ -3,15 +3,16 @@ import pandas as pd
 # Maps committee names to the tickers they have regulatory/oversight visibility into.
 COMMITTEE_SECTOR_MAP = {
     "Armed Services": {"LMT", "RTX", "NOC", "GD", "BA", "HII", "L3T", "LDOS"},
-    "Intelligence":   {"PLTR", "MSFT", "GOOGL", "AMZN", "NVDA", "SAIC", "BAH"},
-    "Homeland Security": {"PLTR", "MSFT", "AMZN", "PANW", "CRWD", "CACI"},
+    "Intelligence":   {"PLTR", "MSFT", "GOOGL", "AMZN", "NVDA", "SAIC", "BAH", "CRWD"},
+    "Homeland Security": {"PLTR", "MSFT", "AMZN", "PANW", "CRWD", "SAIC", "BAH"},
     "Finance":        {"JPM", "GS", "BAC", "MS", "WFC", "C", "V", "MA", "AXP"},
     "Banking":        {"JPM", "GS", "BAC", "MS", "WFC", "C", "V", "MA"},
     "Financial Services": {"JPM", "GS", "BAC", "MS", "WFC", "C", "V", "MA", "AXP"},
     "Commerce":       {"AMZN", "GOOGL", "META", "MSFT", "AAPL", "NFLX"},
     "Energy & Commerce": {"MSFT", "AAPL", "GOOGL", "META", "AMZN", "CVX", "XOM"},
     "Health":         {"UNH", "JNJ", "PFE", "MRK", "ABBV", "CVS", "CI"},
-    "Oversight":      {"MSFT", "GOOGL", "AMZN", "AAPL", "NVDA", "META"},
+    "Oversight":      {"MSFT", "GOOGL", "AMZN", "AAPL", "NVDA", "META", "PLTR"},
+    "Financial Services": {"JPM", "GS", "BAC", "MS", "WFC", "C", "V", "MA", "AXP"},
     "Rules":          set(),  # Leadership committee — unrestricted; kept as empty set
 }
 
