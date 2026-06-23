@@ -172,21 +172,34 @@ def plot_size_vs_alpha(results_df, filename="size_vs_alpha.png"):
 
 
 def print_sweep_top10(sweep_df):
-    """Prints the top 10 parameter combinations from the sweep, ranked by Sharpe."""
+    """
+    Prints the top 10 parameter combinations from the sweep, ranked by Sharpe.
+    Shows BH-FDR corrected significance alongside raw p-value.
+    """
     if sweep_df.empty:
         print("[report_advanced] No sweep results to display.")
         return
 
+    has_fdr = "sig_fdr" in sweep_df.columns
+    sig_col = "sig_fdr" if has_fdr else "sig_uncorrected"
+
     top = sweep_df.head(10)
-    print("\n" + "=" * 105)
-    print("TOP 10 PARAMETER COMBINATIONS (ranked by Sharpe)")
-    print("=" * 105)
-    print(f"{'#':>3} {'HOLD':>5} {'LAG':>4} {'AMOUNT':>9} {'COMM':>5} {'MPOL':>5} "
-          f"{'N':>5} {'WIN%':>6} {'AVG α':>8} {'SHARPE':>7} {'T-STAT':>7} {'P-VAL':>7} {'SIG':>4}")
-    print("-" * 105)
+    width = 115 if has_fdr else 105
+    print("\n" + "=" * width)
+    print("TOP 10 PARAMETER COMBINATIONS (ranked by Sharpe, in-sample only)")
+    if has_fdr:
+        print("NOTE: SIG column uses Benjamini-Hochberg FDR correction for multiple comparisons.")
+    print("=" * width)
+    hdr = (f"{'#':>3} {'HOLD':>5} {'LAG':>4} {'AMOUNT':>9} {'COMM':>5} {'MPOL':>5} "
+           f"{'N':>5} {'WIN%':>6} {'AVG α':>8} {'SHARPE':>7} {'T-STAT':>7} {'P-VAL':>7}")
+    hdr += " {'FDR-SIG':>8}" if has_fdr else " {'SIG':>4}"
+    print(hdr)
+    print("-" * width)
     for rank, (_, row) in enumerate(top.iterrows(), 1):
-        sig_mark = "✓" if row.get("sig") else " "
-        print(
+        sig_mark = "✓ FDR" if (has_fdr and row.get("sig_fdr")) else (
+            "✓" if row.get("sig_uncorrected") else " "
+        )
+        line = (
             f"{rank:>3} "
             f"{int(row['hold_days']):>4}d "
             f"{int(row['entry_lag']):>3}d "
@@ -199,9 +212,20 @@ def print_sweep_top10(sweep_df):
             f"{row['sharpe']:>7.2f} "
             f"{row['t_stat']:>7.2f} "
             f"{row['p_value']:>7.4f} "
-            f"{sig_mark:>4}"
+            f"{sig_mark:>8}"
         )
-    print("=" * 105)
+        print(line)
+    print("=" * width)
+
+    # Print OOS result for the best combo if available
+    oos_row = sweep_df[sweep_df["oos_n"].notna()].head(1) if "oos_n" in sweep_df.columns else pd.DataFrame()
+    if not oos_row.empty:
+        r = oos_row.iloc[0]
+        oos_sig = "✓ SIGNIFICANT" if r.get("oos_sig") else "✗ not significant"
+        print(f"\nOUT-OF-SAMPLE validation (best IS params on 2023–2024 data):")
+        print(f"  n={int(r['oos_n'])}  avg_alpha={r['oos_avg_alpha']:+.2%}  "
+              f"Sharpe={r['oos_sharpe']:.2f}  t={r['oos_t_stat']:.2f}  "
+              f"p={r['oos_p_value']:.4f}  {oos_sig}")
 
 
 def save_sweep_csv(sweep_df, filename="sweep_results.csv"):

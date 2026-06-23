@@ -48,10 +48,15 @@ def get_prices(tickers, start, end):
     if failed:
         print(f"\n  [prices] Yahoo Finance unavailable for {len(failed)} ticker(s). "
               f"Using synthetic price data calibrated to real historical returns.")
+        print(f"  *** WARNING: SYNTHETIC PRICES IN USE ***")
+        print(f"  Results reflect GBM random walks, not real market prices.")
+        print(f"  Alpha figures cannot be interpreted as real-world trading edge.")
+        print(f"  To use real prices: run locally where Yahoo Finance is not blocked,")
+        print(f"  or provide a QuiverQuant API key for full data. (--api-key YOUR_KEY)")
         synthetic = get_synthetic_prices(failed, start=start, end=end)
         prices.update(synthetic)
 
-    return prices
+    return prices, bool(failed)
 
 
 def get_return(ticker, entry_date, hold_days, prices):

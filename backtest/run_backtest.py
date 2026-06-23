@@ -83,7 +83,13 @@ def _load_data(args):
     price_end = (pd.Timestamp(args.end) + pd.Timedelta(days=max_hold + 30)).strftime("%Y-%m-%d")
     tickers = trades["ticker"].unique().tolist()
     print(f"[main] Fetching prices for {len(tickers)} tickers + SPY...")
-    prices = get_prices(tickers, start=args.start, end=price_end)
+    prices, using_synthetic = get_prices(tickers, start=args.start, end=price_end)
+    if using_synthetic:
+        print("\n" + "!" * 70)
+        print("! SYNTHETIC DATA MODE — results are NOT real-world performance data.")
+        print("! Run locally with internet access for real Yahoo Finance prices,")
+        print("! or pass --api-key to load real QuiverQuant trade disclosures.")
+        print("!" * 70 + "\n")
     return trades, prices
 
 
