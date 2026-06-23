@@ -1,0 +1,23 @@
+{
+  "account": {
+    "niche": "AI tools for money-making and productivity",
+    "target_audience": "Side-hustlers and young professionals",
+    "goal": "Grow followers — audience building mode",
+    "posting_frequency": "1x per day",
+    "account_status": "Fresh start",
+    "budget": "$0/month"
+  },
+  "weekly_batch": {
+    "slides_per_week": 7,
+    "batch_day": "Sunday",
+    "slides_per_post": 5
+  },
+  "tools": {
+    "hook_generator": "Claude (free tier)",
+    "image_source": "Pinterest (free)",
+    "slide_builder": "Node.js Canvas (local)",
+    "post_processor": "CapCut (free) + Telegram compression",
+    "scheduler": "Postiz (free tier)",
+    "publisher": "Manual from TikTok Drafts"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "week": 1,
+  "batch_date": "",
+  "slides": [
+    {
+      "post_id": 1,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    },
+    {
+      "post_id": 2,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    },
+    {
+      "post_id": 3,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    },
+    {
+      "post_id": 4,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    },
+    {
+      "post_id": 5,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    },
+    {
+      "post_id": 6,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    },
+    {
+      "post_id": 7,
+      "hook": "",
+      "slides_text": ["", "", "", "", ""],
+      "image_paths": ["", "", "", "", ""],
+      "status": "pending"
+    }
+  ]
+}
