@@ -9,6 +9,7 @@ This is a monorepo containing multiple independent projects:
 - `financeapp/` — Personal finance planner (React + Vite + Tailwind + Supabase)
 - `tradingjournal/` — Trading journal & analytics app (React + Vite + Tailwind + Supabase)
 - `tictactoe/` — Browser-based Tic Tac Toe (vanilla HTML/CSS/JS)
+- `personnel-tracker/` — Personnel leave/skills/duty tracker (Google Sheets + Forms via an Apps Script auto-builder; no web app, no build step)
 
 ---
 
@@ -138,6 +139,28 @@ Single page with 3 files: `index.html`, `style.css`, `script.js`. All game logic
 - `spawnConfetti()` — CSS animation triggered on win
 
 Scores persist in the `state` object for the session only (no localStorage — resets on page refresh).
+
+---
+
+## personnel-tracker
+
+Not a web app — a **Google Sheets + Forms** system provisioned by a single Google Apps Script. No
+npm, no build, no deploy. See `personnel-tracker/README.md`.
+
+### How it works
+
+`personnel-tracker/BuildPersonnelTracker.gs` is pasted into a blank Google Sheet (Extensions →
+Apps Script) and run once. It creates a leave-input Form, the linked `Form Responses 1` ledger, and
+four tabs: `Skills Database`, `Tactical Timeline Tracker` (PRESENT/OL matrix), `Command Dashboard`
+(live per-skill availability), and `Appointment Board` (duty roster with double-booking + overseas
+guardrails). Everything is formula-driven off the live ledger, so Form submissions update all views
+automatically.
+
+### Editing
+
+All customisation lives in the `CONFIG` block at the top of the `.gs` file (`ROSTER`, `SKILLS_SEED`,
+`ROLES`, `START_DATE`, `NUM_DAYS`). Edit there and re-run. The script is parse-checkable with
+`node --check`, but the `SpreadsheetApp`/`FormApp` globals only exist in the Apps Script runtime.
 
 ---
 
