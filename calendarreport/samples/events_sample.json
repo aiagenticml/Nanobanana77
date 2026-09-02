@@ -1,0 +1,42 @@
+[
+  {
+    "summary": "Team Standup",
+    "location": "Meeting Room 2",
+    "start": { "dateTime": "2026-09-02T09:00:00+08:00" },
+    "end": { "dateTime": "2026-09-02T09:15:00+08:00" },
+    "attendees": [
+      { "email": "ai.agenticml@gmail.com", "displayName": "Me", "responseStatus": "accepted" },
+      { "email": "alice.tan@example.com", "displayName": "Alice Tan", "responseStatus": "accepted" },
+      { "email": "bob.lim@example.com", "displayName": "Bob Lim", "responseStatus": "accepted" }
+    ]
+  },
+  {
+    "summary": "Lunch",
+    "start": { "dateTime": "2026-09-02T12:00:00+08:00" },
+    "end": { "dateTime": "2026-09-02T13:00:00+08:00" }
+  },
+  {
+    "summary": "Client Review — Acme Pte Ltd",
+    "location": "Zoom",
+    "start": { "dateTime": "2026-09-02T14:00:00+08:00" },
+    "end": { "dateTime": "2026-09-02T15:00:00+08:00" },
+    "attendees": [
+      { "email": "ai.agenticml@gmail.com", "displayName": "Me" },
+      { "email": "j.chen@acme.example", "displayName": "Jasmine Chen" }
+    ]
+  },
+  {
+    "summary": "Site Inspection - Tuas Depot",
+    "location": "Tuas",
+    "start": { "dateTime": "2026-09-02T16:00:00+08:00" },
+    "end": { "dateTime": "2026-09-02T17:30:00+08:00" },
+    "attendees": [
+      { "email": "bob.lim@example.com", "displayName": "Bob Lim" }
+    ]
+  },
+  {
+    "summary": "Quarterly Filing Deadline",
+    "start": { "date": "2026-09-02" },
+    "end": { "date": "2026-09-03" }
+  }
+]

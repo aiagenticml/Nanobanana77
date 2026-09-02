@@ -1,0 +1,87 @@
+# Mapping rules: how Google Calendar event names drive the document contents.
+#
+# EDIT THIS FILE to match your real rules. Everything below is an EXAMPLE
+# so the pipeline runs end-to-end today — the categories, wording and flags
+# are placeholders, not guesses at your actual process.
+#
+# How it works:
+#   1. Each event title is tested against every rule's `match` patterns
+#      (case-insensitive regular expressions) in order. First match wins.
+#   2. The matched rule assigns a `category`, an optional table `label`
+#      override, and can raise `flags`.
+#   3. Flags then select which `wording` variant lands in the document.
+
+timezone: Asia/Singapore
+
+# Events matching any of these are dropped entirely (never reach the table).
+exclude:
+  - '(?i)^\s*(lunch|break|commute)\s*$'
+  - '(?i)declined'
+
+rules:
+  - name: client_meeting
+    match:
+      - '(?i)\bclient\b'
+      - '(?i)\bcustomer\b'
+    category: Client
+    flags: [has_client_meeting]
+
+  - name: internal_meeting
+    match:
+      - '(?i)\b(standup|stand-up|sync|1:1|one on one|team)\b'
+    category: Internal
+    flags: [has_internal_meeting]
+
+  - name: site_visit
+    match:
+      - '(?i)\b(site|visit|inspection|offsite|off-site)\b'
+    category: Site Visit
+    flags: [is_offsite]
+
+  - name: training
+    match:
+      - '(?i)\b(training|course|workshop|briefing)\b'
+    category: Training
+    flags: [has_training]
+
+  - name: leave
+    match:
+      - '(?i)\b(leave|annual leave|mc|medical|off|holiday|ooo|out of office)\b'
+    category: Leave
+    flags: [is_non_working_day]
+
+# Fallback for any event that matches no rule above.
+default:
+  category: General
+  flags: []
+
+# Wording variants. `default` is used unless a listed flag is raised;
+# when several apply, the FIRST matching entry in `when` order wins.
+wording:
+  intro:
+    default: "The following activities were carried out on {{ report_date }}."
+    when:
+      - flag: is_non_working_day
+        text: "No operational activities were carried out on {{ report_date }}."
+      - flag: is_offsite
+        text: "Activities on {{ report_date }} were conducted off-site."
+      - flag: has_client_meeting
+        text: "Client-facing activities were carried out on {{ report_date }}."
+
+  closing:
+    default: "No further matters to report."
+    when:
+      - flag: has_client_meeting
+        text: "Client follow-up actions are to be confirmed."
+      - flag: is_non_working_day
+        text: "Report submitted for record purposes only."
+
+# Names section: how attendee names are pulled off events before you confirm them.
+names:
+  # Only take attendees from events in these categories. Empty list = all categories.
+  from_categories: [Client, Internal, Site Visit]
+  # Drop these from the derived list (your own address, resource rooms, etc.)
+  exclude_emails:
+    - ai.agenticml@gmail.com
+  # Prefer displayName; fall back to the local part of the email address.
+  prefer_display_name: true

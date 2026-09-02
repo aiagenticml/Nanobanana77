@@ -23,5 +23,17 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Claude internal
-.claude/
+# Claude internal — but skills are shared, so keep them tracked.
+# Note: `.claude/*` not `.claude/`, otherwise git never descends and the
+# negation below is ignored.
+.claude/*
+!.claude/skills/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# calendarreport — generated documents and fetched event dumps
+calendarreport/output/*.docx
+calendarreport/samples/events_20*.json
